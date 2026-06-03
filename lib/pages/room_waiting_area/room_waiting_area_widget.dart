@@ -173,20 +173,6 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                           lineHeight: 1.2,
                                         ),
                                   ),
-                                  FlutterFlowIconButton(
-                                    borderRadius: 8.0,
-                                    buttonSize: 40.0,
-                                    fillColor: Colors.transparent,
-                                    icon: Icon(
-                                      Icons.content_copy_rounded,
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      size: 20.0,
-                                    ),
-                                    onPressed: () {
-                                      print('IconButton pressed ...');
-                                    },
-                                  ),
                                 ].divide(const SizedBox(width: 16.0)),
                               ),
                             ),

@@ -49,9 +49,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: SafeArea(
-          // Bezpieczna strefa dla urządzeń z notchem
           child: SingleChildScrollView(
-            // <-- TUTAJ DODAJEMY SCROLLOWANIE
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -72,12 +70,12 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                           Text(
                             'Ustawienia profilu',
                             style: FlutterFlowTheme.of(context)
-                                .headlineMedium
+                                .headlineLarge
                                 .override(
                                   font: GoogleFonts.poppins(
                                     fontWeight: FontWeight.w800,
                                     fontStyle: FlutterFlowTheme.of(context)
-                                        .headlineMedium
+                                        .headlineLarge
                                         .fontStyle,
                                   ),
                                   color:
@@ -85,86 +83,40 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w800,
                                   fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineMedium
+                                      .headlineLarge
                                       .fontStyle,
                                   lineHeight: 1.2,
                                 ),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context).success10,
-                              borderRadius: BorderRadius.circular(9999.0),
-                              shape: BoxShape.rectangle,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 8.0, 16.0, 8.0),
-                              child: Container(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.circle,
-                                      color: FlutterFlowTheme.of(context)
-                                          .onSurface,
-                                      size: 8.0,
-                                    ),
-                                    Text(
-                                      'Lobby: 4/6',
-                                      style: FlutterFlowTheme.of(context)
-                                          .labelMedium
-                                          .override(
-                                            font: GoogleFonts.spaceGrotesk(
-                                              fontWeight: FontWeight.bold,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .onSurface,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
-                                            lineHeight: 1.2,
-                                          ),
-                                    ),
-                                  ].divide(const SizedBox(width: 4.0)),
-                                ),
-                              ),
-                            ),
                           ),
                         ],
                       ),
                       Text(
                         'Ustal swój kalendarz',
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        style: FlutterFlowTheme.of(context)
+                            .titleMedium
+                            .override(
                               font: GoogleFonts.urbanist(
                                 fontWeight: FlutterFlowTheme.of(context)
-                                    .bodyMedium
+                                    .titleMedium
                                     .fontWeight,
                                 fontStyle: FlutterFlowTheme.of(context)
-                                    .bodyMedium
+                                    .titleMedium
                                     .fontStyle,
                               ),
                               color: FlutterFlowTheme.of(context).secondaryText,
                               letterSpacing: 0.0,
                               fontWeight: FlutterFlowTheme.of(context)
-                                  .bodyMedium
+                                  .titleMedium
                                   .fontWeight,
                               fontStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
+                                  .titleMedium
                                   .fontStyle,
                               lineHeight: 1.5,
                             ),
                       ),
-                    ].divide(const SizedBox(height: 4.0)),
+                    ],
                   ),
+                  const SizedBox(height: 16.0),
                   Container(
                     decoration: BoxDecoration(
                       boxShadow: [
@@ -175,7 +127,6 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                             0.0,
                             10.0,
                           ),
-                          spreadRadius: 0.0,
                         )
                       ],
                       gradient: LinearGradient(
@@ -192,21 +143,21 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
-                      child: Container(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 80.0,
-                              height: 80.0,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                borderRadius: BorderRadius.circular(24.0),
-                                shape: BoxShape.rectangle,
-                              ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 80.0,
+                            height: 80.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                              borderRadius: BorderRadius.circular(24.0),
+                              shape: BoxShape.rectangle,
+                            ),
+                            child: Align(
                               alignment: const AlignmentDirectional(0.0, 0.0),
                               child: Text(
                                 'JD',
@@ -234,73 +185,74 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                 overflow: TextOverflow.clip,
                               ),
                             ),
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Wylosowany profil',
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelSmall
-                                        .override(
-                                          font: GoogleFonts.spaceGrotesk(
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelSmall
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .onBackground80,
-                                          letterSpacing: 0.0,
+                          ),
+                          const SizedBox(
+                              width:
+                                  24.0), // Zastąpiono uszkodzoną metodę .divide() stałym odstępem między elementami wiersza
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment
+                                  .start, // Zmieniono na start, by tekst ładnie przylegał do prawej strony awatara
+                              children: [
+                                Text(
+                                  'Wylosowany profil',
+                                  style: FlutterFlowTheme.of(context)
+                                      .labelMedium
+                                      .override(
+                                        font: GoogleFonts.spaceGrotesk(
                                           fontWeight:
                                               FlutterFlowTheme.of(context)
-                                                  .labelSmall
+                                                  .labelMedium
                                                   .fontWeight,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
-                                                  .labelSmall
+                                                  .labelMedium
                                                   .fontStyle,
-                                          lineHeight: 1.2,
                                         ),
-                                  ),
-                                  Text(
-                                    'Sportowiec',
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleLarge
-                                        .override(
-                                          font: GoogleFonts.urbanist(
-                                            fontWeight: FontWeight.w800,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleLarge
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .onBackground,
-                                          letterSpacing: 0.0,
+                                        color: FlutterFlowTheme.of(context)
+                                            .onBackground80,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .fontStyle,
+                                        lineHeight: 1.2,
+                                      ),
+                                ),
+                                Text(
+                                  'Sportowiec',
+                                  style: FlutterFlowTheme.of(context)
+                                      .titleLarge
+                                      .override(
+                                        font: GoogleFonts.urbanist(
                                           fontWeight: FontWeight.w800,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
                                                   .titleLarge
                                                   .fontStyle,
-                                          lineHeight: 1.3,
                                         ),
-                                  ),
-                                ].divide(const SizedBox(height: 4.0)),
-                              ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .onBackground,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w800,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .titleLarge
+                                            .fontStyle,
+                                        lineHeight: 1.3,
+                                      ),
+                                ),
+                              ],
                             ),
-                          ].divide(const SizedBox(width: 24.0)),
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16.0),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -311,72 +263,66 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Twój kalendarz',
-                                style: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .override(
-                                      font: GoogleFonts.urbanist(
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16.0),
+                                Text(
+                                  'Twój kalendarz',
+                                  style: FlutterFlowTheme.of(context)
+                                      .headlineSmall
+                                      .override(
+                                        font: GoogleFonts.urbanist(
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .headlineSmall
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FlutterFlowTheme.of(context)
-                                            .titleMedium
+                                            .headlineSmall
                                             .fontStyle,
+                                        lineHeight: 1.3,
                                       ),
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleMedium
-                                          .fontStyle,
-                                      lineHeight: 1.3,
-                                    ),
-                              ),
-                              Text(
-                                'Przeciągaj bloki, aby zmienić kolejność zadań',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodySmall
-                                    .override(
-                                      font: GoogleFonts.urbanist(
+                                ),
+                                Text(
+                                  'Przeciągaj bloki, aby zmienić kolejność zadań',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.urbanist(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                        letterSpacing: 0.0,
                                         fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
+                                            .bodyMedium
                                             .fontWeight,
                                         fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
+                                            .bodyMedium
                                             .fontStyle,
+                                        lineHeight: 1.4,
                                       ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontStyle,
-                                      lineHeight: 1.4,
-                                    ),
-                              ),
-                            ].divide(const SizedBox(height: 4.0)),
-                          ),
-                          FlutterFlowIconButton(
-                            borderRadius: 8.0,
-                            buttonSize: 40.0,
-                            fillColor: Colors.transparent,
-                            icon: Icon(
-                              Icons.info_outline_rounded,
-                              color: FlutterFlowTheme.of(context).secondaryText,
-                              size: 20.0,
+                                ),
+                              ].divide(const SizedBox(height: 4.0)),
                             ),
-                            onPressed: () {
-                              print('IconButton pressed ...');
-                            },
                           ),
                         ],
                       ),
+                      const SizedBox(height: 12.0),
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -388,8 +334,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                             child: const TimeSlotWidget(
                               icon: Icon(
                                 Icons.water_drop_rounded,
-                                color:
-                                    Colors.blue, // Przykładowy fallback koloru
+                                color: Colors.blue,
                                 size: 24.0,
                               ),
                               task: 'Basen',
@@ -451,51 +396,44 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                           ),
                         ].divide(const SizedBox(height: 8.0)),
                       ),
-                    ].divide(const SizedBox(height: 16.0)),
+                    ],
                   ),
-                  Container(
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          24.0, 0.0, 24.0, 0.0),
-                      child: Container(
-                        child: GestureDetector(
-                          onTap: () => context.goNamed(
-                            CurrentTaskViewWidget.routeName,
-                            extra: {
-                              kTransitionInfoKey: const TransitionInfo(
-                                hasTransition: true,
-                                transitionType: PageTransitionType.rightToLeft,
-                                duration: Duration(milliseconds: 300),
-                              ),
-                            },
+                  const SizedBox(height: 24.0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: GestureDetector(
+                      onTap: () => context.goNamed(
+                        CurrentTaskViewWidget.routeName,
+                        extra: {
+                          kTransitionInfoKey: const TransitionInfo(
+                            hasTransition: true,
+                            transitionType: PageTransitionType.rightToLeft,
+                            duration: Duration(milliseconds: 300),
                           ),
-                          child: wrapWithModel(
-                            model: _model.buttonModel,
-                            updateCallback: () => safeSetState(() {}),
-                            child: ButtonWidget(
-                              content: 'Potwierdź kalendarz',
-                              icon: Icon(
-                                Icons.check_circle_rounded,
-                                color: FlutterFlowTheme.of(context).onPrimary,
-                                size: 16.0,
-                              ),
-                              iconPresent: true,
-                              iconEndPresent: false,
-                              variant: 'primary',
-                              size: 'large',
-                              fullWidth: true,
-                              loading: false,
-                              disabled: false,
-                            ),
+                        },
+                      ),
+                      child: wrapWithModel(
+                        model: _model.buttonModel,
+                        updateCallback: () => safeSetState(() {}),
+                        child: ButtonWidget(
+                          content: 'Potwierdź kalendarz',
+                          icon: Icon(
+                            Icons.check_circle_rounded,
+                            color: FlutterFlowTheme.of(context).onPrimary,
+                            size: 16.0,
                           ),
+                          iconPresent: true,
+                          iconEndPresent: false,
+                          variant: 'primary',
+                          size: 'large',
+                          fullWidth: true,
+                          loading: false,
+                          disabled: false,
                         ),
                       ),
                     ),
                   ),
-                  // Usunięto const Spacer(), ponieważ powodowałby błąd w SingleChildScrollView
-                  const SizedBox(
-                      height:
-                          16.0), // Zamiast Spacer dajemy stały odstęp na dole
+                  const SizedBox(height: 16.0),
                 ],
               ),
             ),
