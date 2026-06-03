@@ -270,9 +270,11 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                       obscureText: false,
                       decoration: InputDecoration(
                         isDense: true,
+                        contentPadding:
+                            EdgeInsetsDirectional.fromSTEB(0, 12, 0, 0),
                         hintText: valueOrDefault<String>(
                           widget.hint,
-                          'E.G. XJ92',
+                          'e.g. XJ92',
                         ),
                         hintStyle: FlutterFlowTheme.of(context)
                             .bodyMedium

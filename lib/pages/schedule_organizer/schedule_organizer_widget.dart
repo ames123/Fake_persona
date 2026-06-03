@@ -1,6 +1,5 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/nav/nav.dart';
 import '/index.dart';
 import '/pages/components/button/button_widget.dart';
 import '/pages/components/time_slot2/time_slot2_widget.dart';

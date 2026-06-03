@@ -2,7 +2,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/components/button/button_widget.dart';
 import '/pages/components/player_note_card/player_note_card_widget.dart';
-import '/pages/profile_setup/profile_setup_widget.dart'; // Import widoku profilu dla akcji przycisku
+// Import widoku profilu dla akcji przycisku
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
