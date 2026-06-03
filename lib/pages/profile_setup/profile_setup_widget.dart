@@ -20,26 +20,105 @@ class ProfileSetupWidget extends StatefulWidget {
   State<ProfileSetupWidget> createState() => _ProfileSetupWidgetState();
 }
 
+// Struktura danych reprezentująca pojedyncze zadanie w kalendarzu
+class SlotData {
+  final int id;
+  final IconData icon;
+  final Color? iconColor;
+  final String task;
+  final String timeLabel;
+
+  SlotData({
+    required this.id,
+    required this.icon,
+    this.iconColor,
+    required this.task,
+    required this.timeLabel,
+  });
+}
+
 class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
   late ProfileSetupModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Definicja początkowej listy zadań do przeciągania
+  late List<SlotData> _slots;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileSetupModel());
+
+    // Inicjalizacja danych kafelków
+    _slots = [
+      SlotData(
+          id: 1,
+          icon: Icons.water_drop_rounded,
+          iconColor: Colors.blue,
+          task: 'Basen',
+          timeLabel: 'Rano'),
+      SlotData(
+          id: 2,
+          icon: Icons.groups_rounded,
+          task: 'Czas wolny',
+          timeLabel: 'Południe'),
+      SlotData(
+          id: 3,
+          icon: Icons.shield_rounded,
+          task: 'Jedzenie',
+          timeLabel: 'Popołudnie'),
+      SlotData(
+          id: 4,
+          icon: Icons.inventory_2_rounded,
+          task: 'Sport',
+          timeLabel: 'Wieczór'),
+      SlotData(
+          id: 5,
+          icon: Icons.nightlight_round,
+          task: 'Gotowanie',
+          timeLabel: 'Noc'),
+    ];
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  // Funkcja obsługująca logikę zmiany kolejności elementów na liście
+  void _updateOrder(int oldIndex, int newIndex) {
+    setState(() {
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+      final SlotData item = _slots.removeAt(oldIndex);
+      _slots.insert(newIndex, item);
+    });
+  }
+
+  // Pomocnicza metoda wiążąca indeks listy z odpowiednim modelem FlutterFlow
+  dynamic _getModelForIndex(int index) {
+    switch (index) {
+      case 0:
+        return _model.timeSlotModel1;
+      case 1:
+        return _model.timeSlotModel2;
+      case 2:
+        return _model.timeSlotModel3;
+      case 3:
+        return _model.timeSlotModel4;
+      case 4:
+        return _model.timeSlotModel5;
+      default:
+        return _model.timeSlotModel1;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -47,7 +126,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -57,6 +136,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // --- Nagłówek ---
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -69,181 +149,89 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                         children: [
                           Text(
                             'Ustawienia profilu',
-                            style: FlutterFlowTheme.of(context)
-                                .headlineLarge
-                                .override(
-                                  font: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w800,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .headlineLarge
-                                        .fontStyle,
-                                  ),
-                                  color:
-                                      FlutterFlowTheme.of(context).primaryText,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w800,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineLarge
-                                      .fontStyle,
-                                  lineHeight: 1.2,
-                                ),
+                            style: theme.headlineLarge.override(
+                              font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w800),
+                              color: theme.primaryText,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ],
                       ),
                       Text(
                         'Ustal swój kalendarz',
-                        style: FlutterFlowTheme.of(context)
-                            .titleMedium
-                            .override(
-                              font: GoogleFonts.urbanist(
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .fontStyle,
-                              ),
-                              color: FlutterFlowTheme.of(context).secondaryText,
-                              letterSpacing: 0.0,
-                              fontWeight: FlutterFlowTheme.of(context)
-                                  .titleMedium
-                                  .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .titleMedium
-                                  .fontStyle,
-                              lineHeight: 1.5,
-                            ),
+                        style: theme.titleMedium.override(
+                          font: GoogleFonts.urbanist(),
+                          color: theme.secondaryText,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16.0),
+
+                  // --- Wizytówka Profilu (Gradient) ---
                   Container(
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
                           blurRadius: 20.0,
-                          color: FlutterFlowTheme.of(context).secondary25,
-                          offset: const Offset(
-                            0.0,
-                            10.0,
-                          ),
+                          color: theme.secondary25,
+                          offset: const Offset(0.0, 10.0),
                         )
                       ],
                       gradient: LinearGradient(
-                        colors: [
-                          FlutterFlowTheme.of(context).primary,
-                          FlutterFlowTheme.of(context).secondary
-                        ],
+                        colors: [theme.primary, theme.secondary],
                         stops: const [0.0, 1.0],
                         begin: const AlignmentDirectional(1.0, 1.0),
                         end: const AlignmentDirectional(-1.0, -1.0),
                       ),
                       borderRadius: BorderRadius.circular(32.0),
-                      shape: BoxShape.rectangle,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
                             width: 80.0,
                             height: 80.0,
                             decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
+                              color: theme.secondaryBackground,
                               borderRadius: BorderRadius.circular(24.0),
-                              shape: BoxShape.rectangle,
                             ),
                             child: Align(
                               alignment: const AlignmentDirectional(0.0, 0.0),
                               child: Text(
                                 'JD',
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                style: FlutterFlowTheme.of(context)
-                                    .labelMedium
-                                    .override(
-                                      font: GoogleFonts.spaceGrotesk(
-                                        fontWeight: FontWeight.w600,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                      ),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      fontSize: 30.4,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w600,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .labelMedium
-                                          .fontStyle,
-                                      lineHeight: 1.2,
-                                    ),
-                                overflow: TextOverflow.clip,
+                                style: theme.labelMedium.override(
+                                  font: GoogleFonts.spaceGrotesk(
+                                      fontWeight: FontWeight.w600),
+                                  color: theme.primary,
+                                  fontSize: 30.4,
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(
-                              width:
-                                  24.0), // Zastąpiono uszkodzoną metodę .divide() stałym odstępem między elementami wiersza
+                          const SizedBox(width: 24.0),
                           Expanded(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment
-                                  .start, // Zmieniono na start, by tekst ładnie przylegał do prawej strony awatara
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Wylosowany profil',
-                                  style: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .override(
-                                        font: GoogleFonts.spaceGrotesk(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .onBackground80,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                        lineHeight: 1.2,
-                                      ),
+                                  style: theme.labelMedium.override(
+                                    font: GoogleFonts.spaceGrotesk(),
+                                    color: theme.onBackground80,
+                                  ),
                                 ),
                                 Text(
                                   'Sportowiec',
-                                  style: FlutterFlowTheme.of(context)
-                                      .titleLarge
-                                      .override(
-                                        font: GoogleFonts.urbanist(
-                                          fontWeight: FontWeight.w800,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleLarge
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .onBackground,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w800,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleLarge
-                                            .fontStyle,
-                                        lineHeight: 1.3,
-                                      ),
+                                  style: theme.titleLarge.override(
+                                    font: GoogleFonts.urbanist(
+                                        fontWeight: FontWeight.w800),
+                                    color: theme.onBackground,
+                                  ),
                                 ),
                               ],
                             ),
@@ -253,152 +241,102 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                     ),
                   ),
                   const SizedBox(height: 16.0),
+
+                  // --- Sekcja Kalendarza i Informacji ---
                   Column(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Row(
                         mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 16.0),
                                 Text(
                                   'Twój kalendarz',
-                                  style: FlutterFlowTheme.of(context)
-                                      .headlineSmall
-                                      .override(
-                                        font: GoogleFonts.urbanist(
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .headlineSmall
-                                                  .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .headlineSmall
-                                            .fontStyle,
-                                        lineHeight: 1.3,
-                                      ),
+                                  style: theme.headlineSmall.override(
+                                    font: GoogleFonts.urbanist(
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                                 Text(
                                   'Przeciągaj bloki, aby zmienić kolejność zadań',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.urbanist(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                        lineHeight: 1.4,
-                                      ),
+                                  style: theme.bodyMedium.override(
+                                    font: GoogleFonts.urbanist(),
+                                    color: theme.secondaryText,
+                                  ),
                                 ),
-                              ].divide(const SizedBox(height: 4.0)),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12.0),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          wrapWithModel(
-                            model: _model.timeSlotModel1,
-                            updateCallback: () => safeSetState(() {}),
-                            child: const TimeSlotWidget(
-                              icon: Icon(
-                                Icons.water_drop_rounded,
-                                color: Colors.blue,
-                                size: 24.0,
-                              ),
-                              task: 'Basen',
-                              timeLabel: 'Rano',
-                              editable: true,
+                      const SizedBox(height: 16.0),
+
+                      // --- DYNAMICZNA PRZECIĄGANA LISTA (ReorderableListView) ---
+                      // --- DYNAMICZNA PRZECIĄGANA LISTA (ReorderableListView) ---
+                      ReorderableListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _slots.length,
+                        onReorder: _updateOrder,
+                        buildDefaultDragHandles:
+                            false, // Wyłączamy domyślny drag na całym kafelku
+                        itemBuilder: (context, index) {
+                          final item = _slots[index];
+
+                          return Padding(
+                            key: ValueKey(item.id),
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Stack(
+                              alignment: Alignment.centerRight,
+                              children: [
+                                // 1. Twój oryginalny komponent (lewa strona pozwala przewijać stronę)
+                                wrapWithModel(
+                                  model: _getModelForIndex(index)
+                                      as TimeSlotModel, // Poprawiono: usunięto getDefModel
+                                  updateCallback: () => safeSetState(() {}),
+                                  child: TimeSlotWidget(
+                                    icon: Icon(
+                                      item.icon,
+                                      color:
+                                          item.iconColor ?? theme.primaryText,
+                                      size: 24.0,
+                                    ),
+                                    task: item.task,
+                                    timeLabel: item.timeLabel,
+                                    editable: true,
+                                  ),
+                                ),
+
+                                // 2. Niewidzialna strefa łapania natychmiastowego dragu nałożona na Twoje kropki
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  width:
+                                      60.0, // Szerokość dopasowana pod ikonkę kropek po prawej stronie
+                                  child: ReorderableDragStartListener(
+                                    index: index,
+                                    child: Container(
+                                      color: Colors
+                                          .transparent, // Przezroczyste tło, nic nie zasłania
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          wrapWithModel(
-                            model: _model.timeSlotModel2,
-                            updateCallback: () => safeSetState(() {}),
-                            child: const TimeSlotWidget(
-                              icon: Icon(
-                                Icons.groups_rounded,
-                                size: 24.0,
-                              ),
-                              task: 'Czas wolny',
-                              timeLabel: 'Południe',
-                              editable: true,
-                            ),
-                          ),
-                          wrapWithModel(
-                            model: _model.timeSlotModel3,
-                            updateCallback: () => safeSetState(() {}),
-                            child: const TimeSlotWidget(
-                              icon: Icon(
-                                Icons.shield_rounded,
-                                size: 24.0,
-                              ),
-                              task: 'Jedzenie',
-                              timeLabel: 'Popołudnie',
-                              editable: true,
-                            ),
-                          ),
-                          wrapWithModel(
-                            model: _model.timeSlotModel4,
-                            updateCallback: () => safeSetState(() {}),
-                            child: const TimeSlotWidget(
-                              icon: Icon(
-                                Icons.inventory_2_rounded,
-                                size: 24.0,
-                              ),
-                              task: 'Sport',
-                              timeLabel: 'Wieczór',
-                              editable: true,
-                            ),
-                          ),
-                          wrapWithModel(
-                            model: _model.timeSlotModel5,
-                            updateCallback: () => safeSetState(() {}),
-                            child: const TimeSlotWidget(
-                              icon: Icon(
-                                Icons.nightlight_round,
-                                size: 24.0,
-                              ),
-                              task: 'Gotowanie',
-                              timeLabel: 'Noc',
-                              editable: true,
-                            ),
-                          ),
-                        ].divide(const SizedBox(height: 8.0)),
+                          );
+                        },
                       ),
                     ],
                   ),
                   const SizedBox(height: 24.0),
+
+                  // --- Przycisk Zatwierdzenia ---
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: GestureDetector(
@@ -419,7 +357,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                           content: 'Potwierdź kalendarz',
                           icon: Icon(
                             Icons.check_circle_rounded,
-                            color: FlutterFlowTheme.of(context).onPrimary,
+                            color: theme.onPrimary,
                             size: 16.0,
                           ),
                           iconPresent: true,
