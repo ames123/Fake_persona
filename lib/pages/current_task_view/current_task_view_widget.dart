@@ -216,8 +216,7 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
               child: GestureDetector(
                 onVerticalDragUpdate: _onVerticalDragUpdate,
                 onVerticalDragEnd: _onVerticalDragEnd,
-                behavior: HitTestBehavior
-                    .opaque, // POPRAWKA: Zmieniono z blackBox na opaque
+                behavior: HitTestBehavior.opaque,
                 child: Container(
                   width: screenSize.width,
                   height: screenSize.height,
@@ -241,7 +240,7 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                         children: [
                           const Spacer(),
                           Text(
-                            'Wybiła godzina',
+                            'Nastała pora:',
                             style: theme.bodyMedium.copyWith(
                               color: theme.primary,
                               fontWeight: FontWeight.w600,
@@ -249,7 +248,7 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            '10.00',
+                            'RANO',
                             style: theme.displayLarge.copyWith(
                               color: Colors.red[400],
                               fontWeight: FontWeight.bold,
@@ -296,6 +295,7 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                                 'Zatwierdź pozycję',
                                 style: TextStyle(
                                   fontSize: 16.0,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -333,48 +333,6 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
             // WARSTWA 3 (AKCESORIA): Przyciski UI zawsze przypięte do góry ekranu
             // =========================================================================
             // Przyciski są poza elementem przesuwanym, dzięki czemu zawsze są dostępne pod palcem
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      FlutterFlowIconButton(
-                        borderRadius: 9999.0,
-                        buttonSize: 48.0,
-                        fillColor: theme.accent4,
-                        icon: Icon(
-                          Icons.account_circle_rounded,
-                          color: theme.primaryText,
-                          size: 32.0,
-                        ),
-                        onPressed: () async {
-                          // Profil
-                        },
-                      ),
-                      FlutterFlowIconButton(
-                        borderRadius: 9999.0,
-                        buttonSize: 48.0,
-                        fillColor: theme.accent4,
-                        icon: Icon(
-                          Icons.search_rounded,
-                          color: theme.primaryText,
-                          size: 32.0,
-                        ),
-                        onPressed: () async {
-                          // Szukaj
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
