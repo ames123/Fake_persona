@@ -5,28 +5,28 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class PlayerNoteCardWidget extends StatefulWidget {
+class PlayerNoteCardWidget extends StatelessWidget {
   const PlayerNoteCardWidget({
     super.key,
     required this.playerName,
-    this.color,
-    this.status = 'Dostępne czynności',
+    required this.currentLocation,
+    required this.selectedAction,
+    required this.color,
+    required this.onLocationChanged,
+    required this.onActionChanged,
+    required this.status,
   });
 
   final String playerName;
-  final Color? color;
+  final String? currentLocation;
+  final String? selectedAction;
+  final Color color;
   final String status;
+  final Function(String) onLocationChanged;
+  final Function(String?) onActionChanged;
 
-  @override
-  State<PlayerNoteCardWidget> createState() => _PlayerNoteCardWidgetState();
-}
-
-class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
-  String? _selectedLocation;
-  String? _selectedAction;
-
-  // 1. Zaktualizowana pełna lista pokoi z Twojej tabeli
-  final List<String> _locationsList = [
+  // Kompletna baza danych odwzorowana 1:1 z przesłanej tabeli
+  final List<String> _locationsList = const [
     'Kuchnia z jadalnią',
     'Salon',
     'Gabinet / Biblioteka',
@@ -42,8 +42,9 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
     'Basen'
   ];
 
-  // 2. Pełna baza danych odwzorowująca Twoją tabelę 1:1 wraz z dopasowanymi ikonami
-  final Map<String, List<Map<String, dynamic>>> _roomActivitiesWithIcons = {
+  // 2. Baza danych akcji powiązana z czystymi nazwami pokoi
+  final Map<String, List<Map<String, dynamic>>> _roomActivitiesWithIcons =
+      const {
     'Kuchnia z jadalnią': [
       {'name': 'Gotowanie', 'icon': Icons.soup_kitchen_rounded},
       {'name': 'Szukanie zapasów', 'icon': Icons.search_rounded},
@@ -68,10 +69,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
       {'name': 'Trening', 'icon': Icons.fitness_center_rounded},
       {'name': 'Badanie lekarskie', 'icon': Icons.medical_services_rounded},
       {'name': 'Słuchanie muzyki', 'icon': Icons.headphones_rounded},
-      {
-        'name': 'Przebieranie się',
-        'icon': Icons.checkroom_rounded
-      }, // Obsługa 4. akcji
+      {'name': 'Przebieranie się', 'icon': Icons.checkroom_rounded},
     ],
     'Łazienka': [
       {'name': 'Kradzież', 'icon': Icons.gavel_rounded},
@@ -81,7 +79,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
     'Pokój Medyczny': [
       {'name': 'Badanie lekarskie', 'icon': Icons.medical_services_rounded},
       {'name': 'Dezynfekcja', 'icon': Icons.vaccines_rounded},
-      {'name': 'Odpoczynek', 'icon': Icons.hotel_rounded},
+      {'name': 'Odpocznek', 'icon': Icons.hotel_rounded},
     ],
     'Piwnica / Korytarz': [
       {'name': 'Kradzież', 'icon': Icons.gavel_rounded},
@@ -112,30 +110,22 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
       {'name': 'Sport', 'icon': Icons.pool_rounded},
       {'name': 'Mycie', 'icon': Icons.waves_rounded},
       {'name': 'Dezynfekcja', 'icon': Icons.sanitizer_rounded},
-      {
-        'name': 'Przebieranie się',
-        'icon': Icons.checkroom_rounded
-      }, // Obsługa 4. akcji
+      {'name': 'Przebieranie się', 'icon': Icons.checkroom_rounded},
     ],
   };
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final cardColor = widget.color ?? theme.primary;
-
-    final currentActivities = _selectedLocation != null
-        ? (_roomActivitiesWithIcons[_selectedLocation] ?? const [])
+    final currentActivities = currentLocation != null
+        ? (_roomActivitiesWithIcons[currentLocation] ?? const [])
         : const [];
 
     return Container(
       decoration: BoxDecoration(
         color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(24.0),
-        border: Border.all(
-          color: theme.alternate,
-          width: 1.0,
-        ),
+        border: Border.all(color: theme.alternate, width: 1.0),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -145,7 +135,6 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
           children: [
             // GÓRA KARTY
             Row(
-              mainAxisSize: MainAxisSize.max,
               children: [
                 Expanded(
                   child: Column(
@@ -153,7 +142,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.playerName,
+                        playerName,
                         style: theme.titleMedium.override(
                           fontFamily: GoogleFonts.urbanist().fontFamily,
                           color: theme.primaryText,
@@ -162,7 +151,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                         ),
                       ),
                       Text(
-                        widget.status,
+                        status,
                         style: theme.labelSmall.override(
                           fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
                           color: theme.secondaryText,
@@ -176,11 +165,8 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                   borderRadius: 8.0,
                   buttonSize: 40.0,
                   fillColor: Colors.transparent,
-                  icon: Icon(
-                    Icons.edit_note_rounded,
-                    color: theme.secondaryText,
-                    size: 24.0,
-                  ),
+                  icon: Icon(Icons.edit_note_rounded,
+                      color: theme.secondaryText, size: 24.0),
                   onPressed: () async {
                     context.goNamed(PlayerInvestigationWidget.routeName);
                   },
@@ -189,7 +175,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
             ),
             const SizedBox(height: 16.0),
 
-            // LOKACJA: Dropdown
+            // POKÓJ: Dropdown wyboru pokoju
             Container(
               decoration: BoxDecoration(
                 color: theme.secondaryBackground,
@@ -199,16 +185,12 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    color: cardColor,
-                    size: 18.0,
-                  ),
+                  Icon(Icons.location_on_rounded, color: color, size: 18.0),
                   const SizedBox(width: 8.0),
                   Expanded(
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: _selectedLocation,
+                        value: currentLocation,
                         hint: Text(
                           'Wybierz pokój...',
                           style: theme.bodyMedium.override(
@@ -232,10 +214,9 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                           );
                         }).toList(),
                         onChanged: (newValue) {
-                          setState(() {
-                            _selectedLocation = newValue;
-                            _selectedAction = null;
-                          });
+                          if (newValue != null) {
+                            onLocationChanged(newValue);
+                          }
                         },
                       ),
                     ),
@@ -244,22 +225,20 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
               ),
             ),
 
-            // LISTA 3 CZYNNOŚCI
-            if (_selectedLocation != null && currentActivities.isNotEmpty) ...[
+            // LISTA CZYNNOŚCI (Dynamicznie dopasowuje się do 3 lub 4 pozycji na bazie wybranego pokoju)
+            if (currentLocation != null && currentActivities.isNotEmpty) ...[
               const SizedBox(height: 16.0),
               Column(
                 children: currentActivities.map((activity) {
                   final String actionName = activity['name'] as String;
                   final IconData actionIcon = activity['icon'] as IconData;
-                  final isSelected = _selectedAction == actionName;
+                  final isSelected = selectedAction == actionName;
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: InkWell(
                       onTap: () {
-                        setState(() {
-                          _selectedAction = isSelected ? null : actionName;
-                        });
+                        onActionChanged(isSelected ? null : actionName);
                       },
                       borderRadius: BorderRadius.circular(12.0),
                       child: Container(
@@ -268,7 +247,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                           color: theme.secondaryBackground,
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(
-                            color: isSelected ? cardColor : theme.alternate,
+                            color: isSelected ? color : theme.alternate,
                             width: isSelected ? 2.0 : 1.0,
                           ),
                         ),
@@ -278,8 +257,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                           children: [
                             Icon(
                               actionIcon,
-                              color:
-                                  isSelected ? cardColor : theme.secondaryText,
+                              color: isSelected ? color : theme.secondaryText,
                               size: 18.0,
                             ),
                             const SizedBox(width: 8.0),
@@ -288,9 +266,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                               style: theme.labelMedium.override(
                                 fontFamily:
                                     GoogleFonts.spaceGrotesk().fontFamily,
-                                color: isSelected
-                                    ? cardColor
-                                    : theme.secondaryText,
+                                color: isSelected ? color : theme.secondaryText,
                                 fontSize: 14.0,
                                 fontWeight: isSelected
                                     ? FontWeight.bold
