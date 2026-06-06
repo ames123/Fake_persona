@@ -2,7 +2,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/pages/components/button/button_widget.dart';
-import '/pages/components/time_slot2/time_slot2_widget.dart';
+import '/pages/components/time_slot2/time_slot2_widget.dart'; // Jeśli używasz ScheduleItemWidget, zmień ten import oraz nazwę klasy poniżej
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'schedule_organizer_model.dart';
@@ -30,43 +30,41 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
     super.initState();
     _model = createModel(context, () => ScheduleOrganizerModel());
 
-    // USUNĘLIŚMY stąd 'icon': Icon(..., color: FlutterFlowTheme.of(context)...)
-    // Zostawiamy tylko surowe dane tekstowe i logiczne.
+    // Dokładnie 5 miejsc w harmonogramie z nazwami pór dnia zamiast godzin
     _timeSlots = [
       {
         'id': 'ts1',
-        'period': '08:00 - 10:00',
-        'task': 'Breakfast at poolside',
+        'period': 'Rano',
+        'task': 'Czas wolny',
+        'icon': Icons.light_mode_rounded,
         'active': true,
       },
       {
         'id': 'ts2',
-        'period': '10:00 - 12:00',
-        'task': 'Gym Session',
+        'period': 'Południe',
+        'task': 'Sport',
+        'icon': Icons.fitness_center_rounded,
         'active': false,
       },
       {
         'id': 'ts3',
-        'period': '12:00 - 14:00',
-        'task': 'Lunch with Alex',
+        'period': 'Popołudnie',
+        'task': 'Jedzenie',
+        'icon': Icons.restaurant_rounded,
         'active': false,
       },
       {
         'id': 'ts4',
-        'period': '14:00 - 16:00',
-        'task': 'Swimming Laps',
+        'period': 'Wieczór',
+        'task': 'Oglądanie',
+        'icon': Icons.theater_comedy_rounded,
         'active': false,
       },
       {
         'id': 'ts5',
-        'period': '16:00 - 18:00',
-        'task': 'Coffee in Lobby',
-        'active': false,
-      },
-      {
-        'id': 'ts6',
-        'period': '18:00 - 20:00',
-        'task': 'Evening Show',
+        'period': 'Noc',
+        'task': 'Czytanie',
+        'icon': Icons.local_cafe_rounded,
         'active': false,
       },
     ];
@@ -75,7 +73,6 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -217,135 +214,61 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
               child: Container(
                 child: SingleChildScrollView(
                   primary: false,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Container(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Twój plan dnia',
-                                style: FlutterFlowTheme.of(context)
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Twój plan dnia',
+                          style: FlutterFlowTheme.of(context)
+                              .titleMedium
+                              .override(
+                                font: GoogleFonts.urbanist(
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleMedium
+                                      .fontStyle,
+                                ),
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FlutterFlowTheme.of(context)
                                     .titleMedium
-                                    .override(
-                                      font: GoogleFonts.urbanist(
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleMedium
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleMedium
-                                          .fontStyle,
-                                      lineHeight: 1.3,
-                                    ),
+                                    .fontStyle,
+                                lineHeight: 1.3,
                               ),
-                              wrapWithModel(
-                                model: _model.timeSlot2Model1,
-                                updateCallback: () => safeSetState(() {}),
-                                child: TimeSlot2Widget(
-                                  icon: Icon(
-                                    Icons.light_mode_rounded,
-                                    color:
-                                        FlutterFlowTheme.of(context).onPrimary,
-                                    size: 24.0,
-                                  ),
-                                  period: '',
-                                  task: 'Basen',
-                                  active: true,
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.timeSlot2Model2,
-                                updateCallback: () => safeSetState(() {}),
-                                child: TimeSlot2Widget(
-                                  icon: Icon(
-                                    Icons.fitness_center_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
-                                  ),
-                                  period: '',
-                                  task: 'Sport',
-                                  active: false,
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.timeSlot2Model3,
-                                updateCallback: () => safeSetState(() {}),
-                                child: TimeSlot2Widget(
-                                  icon: Icon(
-                                    Icons.restaurant_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
-                                  ),
-                                  period: '',
-                                  task: 'Jedzenie',
-                                  active: false,
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.timeSlot2Model4,
-                                updateCallback: () => safeSetState(() {}),
-                                child: TimeSlot2Widget(
-                                  icon: Icon(
-                                    Icons.pool_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
-                                  ),
-                                  period: ' ',
-                                  task: 'Sprzątanie',
-                                  active: false,
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.timeSlot2Model5,
-                                updateCallback: () => safeSetState(() {}),
-                                child: TimeSlot2Widget(
-                                  icon: Icon(
-                                    Icons.local_cafe_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
-                                  ),
-                                  period: '',
-                                  task: 'Czas wolny',
-                                  active: false,
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.timeSlot2Model6,
-                                updateCallback: () => safeSetState(() {}),
-                                child: TimeSlot2Widget(
-                                  icon: Icon(
-                                    Icons.theater_comedy_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
-                                  ),
-                                  period: '',
-                                  task: 'Czytanie',
-                                  active: false,
-                                ),
-                              ),
-                            ].divide(const SizedBox(height: 16.0)),
-                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16.0),
+                        // Dynamiczne renderowanie 5 pór dnia z listy _timeSlots
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _timeSlots.length,
+                          itemBuilder: (context, index) {
+                            final slot = _timeSlots[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: TimeSlot2Widget(
+                                icon: Icon(
+                                  slot['icon'] as IconData,
+                                  color: slot['active'] as bool
+                                      ? FlutterFlowTheme.of(context).onPrimary
+                                      : FlutterFlowTheme.of(context)
+                                          .secondaryText,
+                                  size: 24.0,
+                                ),
+                                period: slot['period'] as String,
+                                task: slot['task'] as String,
+                                active: slot['active'] as bool,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
