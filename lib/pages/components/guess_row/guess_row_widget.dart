@@ -15,17 +15,22 @@ class GuessRowWidget extends StatefulWidget {
     String? nicknames,
     String? profileName,
     String? scheduleHint,
+    bool? duplicateProfession,
+    this.onProfessionChanged,
   })  : color = color ?? const Color(0x00000000),
         initials = initials ?? 'JS',
         nicknames = nicknames ?? 'Alex Rivera,Jordan Smith,Casey V.,Taylor P.',
         profileName = profileName ?? 'Kucharz',
-        scheduleHint = scheduleHint ?? '';
+        scheduleHint = scheduleHint ?? '',
+        duplicateProfession = duplicateProfession ?? false;
 
   final Color color;
   final String initials;
   final String nicknames;
   final String profileName;
   final String scheduleHint;
+  final bool duplicateProfession;
+  final ValueChanged<String?>? onProfessionChanged;
 
   @override
   State<GuessRowWidget> createState() => _GuessRowWidgetState();
@@ -55,13 +60,24 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final professionOptions = widget.nicknames
+        .split(',')
+        .map((option) => option.trim())
+        .where((option) => option.isNotEmpty)
+        .toList();
+    final assignedProfession = _model.dropdownValue;
+
     return Container(
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
+        color: widget.duplicateProfession
+            ? FlutterFlowTheme.of(context).error.withOpacity(0.08)
+            : FlutterFlowTheme.of(context).secondaryBackground,
         borderRadius: BorderRadius.circular(9999.0),
         shape: BoxShape.rectangle,
         border: Border.all(
-          color: FlutterFlowTheme.of(context).alternate,
+          color: widget.duplicateProfession
+              ? FlutterFlowTheme.of(context).error
+              : FlutterFlowTheme.of(context).alternate,
           width: 1.0,
         ),
       ),
@@ -138,10 +154,10 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                           ),
                     ),
                     Text(
-                      valueOrDefault<String>(
-                        widget.scheduleHint,
-                        '',
-                      ),
+                      assignedProfession != null &&
+                              assignedProfession.isNotEmpty
+                          ? 'Zawód: $assignedProfession'
+                          : 'Dostosuj profil',
                       style: FlutterFlowTheme.of(context).labelSmall.override(
                             font: GoogleFonts.spaceGrotesk(
                               fontWeight: FlutterFlowTheme.of(context)
@@ -151,7 +167,10 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                                   .labelSmall
                                   .fontStyle,
                             ),
-                            color: FlutterFlowTheme.of(context).secondaryText,
+                            color: assignedProfession != null &&
+                                    assignedProfession.isNotEmpty
+                                ? FlutterFlowTheme.of(context).primary
+                                : FlutterFlowTheme.of(context).secondaryText,
                             letterSpacing: 0.0,
                             fontWeight: FlutterFlowTheme.of(context)
                                 .labelSmall
@@ -172,9 +191,11 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                       FormFieldController<String>(
                     _model.dropdownValue ??= '',
                   ),
-                  options: const <String>[],
-                  onChanged: (val) =>
-                      safeSetState(() => _model.dropdownValue = val),
+                  options: professionOptions,
+                  onChanged: (val) {
+                    safeSetState(() => _model.dropdownValue = val);
+                    widget.onProfessionChanged?.call(val);
+                  },
                   width: 200.0,
                   height: 40.0,
                   textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -193,7 +214,7 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                             FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                         lineHeight: 1.5,
                       ),
-                  hintText: 'Wybierz gracza',
+                  hintText: 'Dostosuj profil',
                   icon: Icon(
                     Icons.arrow_drop_down_rounded,
                     color: FlutterFlowTheme.of(context).secondaryText,

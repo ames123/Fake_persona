@@ -120,8 +120,9 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                               children: [
                                 Icon(
                                   Icons.timer_rounded,
+                                  // ZMIANA: Zmieniono z onSecondary na primaryText dla lepszej widoczności
                                   color:
-                                      FlutterFlowTheme.of(context).onSecondary,
+                                      FlutterFlowTheme.of(context).primaryText,
                                   size: 20.0,
                                 ),
                                 Text(
@@ -136,8 +137,9 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
+                                        // ZMIANA: Zmieniono z onSecondary na primaryText
                                         color: FlutterFlowTheme.of(context)
-                                            .onSecondary,
+                                            .primaryText,
                                         fontSize: 24.0,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
@@ -218,53 +220,112 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                       lineHeight: 1.3,
                                     ),
                               ),
-                              wrapWithModel(
-                                model: _model.guessRowModel1,
-                                updateCallback: () => safeSetState(() {}),
-                                child: GuessRowWidget(
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  initials: 'JS',
-                                  nicknames:
-                                      'Alex Rivera,Jordan Smith,Casey V.,Taylor P.',
-                                  profileName: 'Kucharz',
-                                  scheduleHint: '',
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.guessRowModel2,
-                                updateCallback: () => safeSetState(() {}),
-                                child: GuessRowWidget(
-                                  color: FlutterFlowTheme.of(context).tertiary,
-                                  initials: 'CV',
-                                  nicknames:
-                                      'Alex Rivera,Jordan Smith,Casey V.,Taylor P.',
-                                  profileName: 'Pisarz',
-                                  scheduleHint: '',
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.guessRowModel3,
-                                updateCallback: () => safeSetState(() {}),
-                                child: GuessRowWidget(
-                                  color: FlutterFlowTheme.of(context).success,
-                                  initials: 'AR',
-                                  nicknames:
-                                      'Alex Rivera,Jordan Smith,Casey V.,Taylor P.',
-                                  profileName: 'Sportowiec',
-                                  scheduleHint: '',
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.guessRowModel4,
-                                updateCallback: () => safeSetState(() {}),
-                                child: GuessRowWidget(
-                                  color: FlutterFlowTheme.of(context).warning,
-                                  initials: 'TP',
-                                  nicknames:
-                                      'Alex Rivera,Jordan Smith,Casey V.,Taylor P.',
-                                  profileName: 'Ogrodnik',
-                                  scheduleHint: '',
-                                ),
+                              Builder(
+                                builder: (context) {
+                                  final selectedProfessions = [
+                                    _model.guessRowModel1.dropdownValue,
+                                    _model.guessRowModel2.dropdownValue,
+                                    _model.guessRowModel3.dropdownValue,
+                                    _model.guessRowModel4.dropdownValue,
+                                  ]
+                                      .where((value) =>
+                                          value != null && value.isNotEmpty)
+                                      .cast<String>()
+                                      .toList();
+                                  final duplicateSet = selectedProfessions
+                                      .fold<Map<String, int>>({}, (map, value) {
+                                        map[value] = (map[value] ?? 0) + 1;
+                                        return map;
+                                      })
+                                      .entries
+                                      .where((entry) => entry.value > 1)
+                                      .map((entry) => entry.key)
+                                      .toSet();
+
+                                  final duplicate1 = duplicateSet.contains(
+                                      _model.guessRowModel1.dropdownValue);
+                                  final duplicate2 = duplicateSet.contains(
+                                      _model.guessRowModel2.dropdownValue);
+                                  final duplicate3 = duplicateSet.contains(
+                                      _model.guessRowModel3.dropdownValue);
+                                  final duplicate4 = duplicateSet.contains(
+                                      _model.guessRowModel4.dropdownValue);
+
+                                  return Column(
+                                    children: [
+                                      wrapWithModel(
+                                        model: _model.guessRowModel1,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          initials: 'AR',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Alex Rivera',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate1,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
+                                      ),
+                                      wrapWithModel(
+                                        model: _model.guessRowModel2,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: FlutterFlowTheme.of(context)
+                                              .tertiary,
+                                          initials: 'JS',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Jordan Smith',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate2,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
+                                      ),
+                                      wrapWithModel(
+                                        model: _model.guessRowModel3,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: FlutterFlowTheme.of(context)
+                                              .success,
+                                          initials: 'CV',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Casey V.',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate3,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
+                                      ),
+                                      wrapWithModel(
+                                        model: _model.guessRowModel4,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: FlutterFlowTheme.of(context)
+                                              .warning,
+                                          initials: 'TP',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Taylor P.',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate4,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
+                                      ),
+                                    ].divide(const SizedBox(
+                                        height:
+                                            16.0)), // ZMIANA: Dodano rozdzielnik wysokości (16px) między wierszami postaci
+                                  );
+                                },
                               ),
                               Container(
                                 decoration: BoxDecoration(
@@ -288,8 +349,9 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                       children: [
                                         Icon(
                                           Icons.info_rounded,
+                                          // ZMIANA: Zmieniono z onInfo na primaryText dla lepszego kontrastu w ramce informacyjnej
                                           color: FlutterFlowTheme.of(context)
-                                              .onInfo,
+                                              .primaryText,
                                           size: 20.0,
                                         ),
                                         Expanded(
@@ -312,9 +374,10 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                                             .bodySmall
                                                             .fontStyle,
                                                   ),
+                                                  // ZMIANA: Zmieniono kolor z onInfo na primaryText
                                                   color: FlutterFlowTheme.of(
                                                           context)
-                                                      .onInfo,
+                                                      .primaryText,
                                                   letterSpacing: 0.0,
                                                   fontWeight:
                                                       FlutterFlowTheme.of(
