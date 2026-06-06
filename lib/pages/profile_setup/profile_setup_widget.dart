@@ -4,7 +4,6 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/components/button/button_widget.dart';
-import '/pages/components/time_slot/time_slot_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'profile_setup_model.dart';
@@ -20,20 +19,17 @@ class ProfileSetupWidget extends StatefulWidget {
   State<ProfileSetupWidget> createState() => _ProfileSetupWidgetState();
 }
 
-// Struktura danych reprezentująca pojedyncze zadanie w kalendarzu
 class SlotData {
   final int id;
   final IconData icon;
-  final Color? iconColor;
+  final Color iconColor;
   final String task;
-  final String timeLabel;
 
   SlotData({
     required this.id,
     required this.icon,
-    this.iconColor,
+    required this.iconColor,
     required this.task,
-    required this.timeLabel,
   });
 }
 
@@ -41,43 +37,48 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
   late ProfileSetupModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Definicja początkowej listy zadań do przeciągania
-  late List<SlotData> _slots;
+  // Stałe, niezmienne pory dnia przypisane do pozycji (od góry do dołu)
+  final List<String> _timeLabels = [
+    'Rano',
+    'Południe',
+    'Popołudnie',
+    'Wieczór',
+    'Noc',
+  ];
+
+  // Lista zadań – użytkownik zmienia wyłącznie ich kolejność
+  final List<SlotData> _slots = [
+    SlotData(
+        id: 1,
+        icon: Icons.water_drop_rounded,
+        iconColor: Colors.blue,
+        task: 'Basen'),
+    SlotData(
+        id: 2,
+        icon: Icons.groups_rounded,
+        iconColor: Colors.blue,
+        task: 'Czas wolny'),
+    SlotData(
+        id: 3,
+        icon: Icons.shield_rounded,
+        iconColor: Colors.blue,
+        task: 'Jedzenie'),
+    SlotData(
+        id: 4,
+        icon: Icons.inventory_2_rounded,
+        iconColor: Colors.blue,
+        task: 'Sport'),
+    SlotData(
+        id: 5,
+        icon: Icons.nightlight_round,
+        iconColor: Colors.blue,
+        task: 'Gotowanie'),
+  ];
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileSetupModel());
-
-    // Inicjalizacja danych kafelków
-    _slots = [
-      SlotData(
-          id: 1,
-          icon: Icons.water_drop_rounded,
-          iconColor: Colors.blue,
-          task: 'Basen',
-          timeLabel: 'Rano'),
-      SlotData(
-          id: 2,
-          icon: Icons.groups_rounded,
-          task: 'Czas wolny',
-          timeLabel: 'Południe'),
-      SlotData(
-          id: 3,
-          icon: Icons.shield_rounded,
-          task: 'Jedzenie',
-          timeLabel: 'Popołudnie'),
-      SlotData(
-          id: 4,
-          icon: Icons.inventory_2_rounded,
-          task: 'Sport',
-          timeLabel: 'Wieczór'),
-      SlotData(
-          id: 5,
-          icon: Icons.nightlight_round,
-          task: 'Gotowanie',
-          timeLabel: 'Noc'),
-    ];
   }
 
   @override
@@ -86,7 +87,6 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
     super.dispose();
   }
 
-  // Funkcja obsługująca logikę zmiany kolejności elementów na liście
   void _updateOrder(int oldIndex, int newIndex) {
     setState(() {
       if (oldIndex < newIndex) {
@@ -95,24 +95,6 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
       final SlotData item = _slots.removeAt(oldIndex);
       _slots.insert(newIndex, item);
     });
-  }
-
-  // Pomocnicza metoda wiążąca indeks listy z odpowiednim modelem FlutterFlow
-  dynamic _getModelForIndex(int index) {
-    switch (index) {
-      case 0:
-        return _model.timeSlotModel1;
-      case 1:
-        return _model.timeSlotModel2;
-      case 2:
-        return _model.timeSlotModel3;
-      case 3:
-        return _model.timeSlotModel4;
-      case 4:
-        return _model.timeSlotModel5;
-      default:
-        return _model.timeSlotModel1;
-    }
   }
 
   @override
@@ -242,7 +224,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                   ),
                   const SizedBox(height: 16.0),
 
-                  // --- Sekcja Kalendarza i Informacji ---
+                  // --- Sekcja Kalendarza ---
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -276,58 +258,108 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                       ),
                       const SizedBox(height: 16.0),
 
-                      // --- DYNAMICZNA PRZECIĄGANA LISTA (ReorderableListView) ---
-                      // --- DYNAMICZNA PRZECIĄGANA LISTA (ReorderableListView) ---
+                      // --- CAŁKOWICIE NIEZALEŻNA LISTA PRZECIĄGANA ---
                       ReorderableListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _slots.length,
                         onReorder: _updateOrder,
-                        buildDefaultDragHandles:
-                            false, // Wyłączamy domyślny drag na całym kafelku
+                        buildDefaultDragHandles: false,
                         itemBuilder: (context, index) {
                           final item = _slots[index];
+                          final currentPeriodLabel = _timeLabels[
+                              index]; // Pora dnia twardo zindeksowana pod wiersz
 
                           return Padding(
                             key: ValueKey(item.id),
                             padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Stack(
-                              alignment: Alignment.centerRight,
-                              children: [
-                                // 1. Twój oryginalny komponent (lewa strona pozwala przewijać stronę)
-                                wrapWithModel(
-                                  model: _getModelForIndex(index)
-                                      as TimeSlotModel, // Poprawiono: usunięto getDefModel
-                                  updateCallback: () => safeSetState(() {}),
-                                  child: TimeSlotWidget(
-                                    icon: Icon(
-                                      item.icon,
-                                      color:
-                                          item.iconColor ?? theme.primaryText,
-                                      size: 24.0,
-                                    ),
-                                    task: item.task,
-                                    timeLabel: item.timeLabel,
-                                    editable: true,
-                                  ),
+                            child: Container(
+                              width: double.infinity,
+                              height:
+                                  90.0, // Wysokość idealnie odwzorowana ze screena
+                              decoration: BoxDecoration(
+                                color: theme.secondaryBackground,
+                                borderRadius: BorderRadius.circular(24.0),
+                                border: Border.all(
+                                  color: theme.alternate,
+                                  width: 1.0,
                                 ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  // 1. Lewa strona: Ikona czynności w jasnoniebieskim kwadracie
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16.0),
+                                    child: Container(
+                                      width: 56.0,
+                                      height: 56.0,
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                            0xFFE3F2FD), // Jasny błękit tła ikony
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
+                                      child: Icon(
+                                        item.icon,
+                                        color: const Color(
+                                            0xFF1E88E5), // Ciemniejszy niebieski dla ikony
+                                        size: 28.0,
+                                      ),
+                                    ),
+                                  ),
 
-                                // 2. Niewidzialna strefa łapania natychmiastowego dragu nałożona na Twoje kropki
-                                Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  bottom: 0,
-                                  width:
-                                      60.0, // Szerokość dopasowana pod ikonkę kropek po prawej stronie
-                                  child: ReorderableDragStartListener(
+                                  // 2. Środek: Kolumna z Porą Dnia (STAŁA) oraz Nazwą Zadania (DYNAMICZNA)
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            currentPeriodLabel, // STAŁA PORA DNIA (Rano, Południe...)
+                                            style: theme.bodySmall.copyWith(
+                                              color: const Color(0xFF1E88E5),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13.0,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            item.task, // DYNAMICZNE ZADANIE (Basen, Sport...)
+                                            style: theme.bodyLarge.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.primaryText,
+                                              fontSize: 18.0,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // 3. Prawa strona: Twój oryginalny dotykowy uchwyt z kropkami (Drag Handle)
+                                  ReorderableDragStartListener(
                                     index: index,
                                     child: Container(
+                                      width: 60.0,
+                                      height: double.infinity,
                                       color: Colors
-                                          .transparent, // Przezroczyste tło, nic nie zasłania
+                                          .transparent, // Przezroczysta strefa łapania
+                                      child: Icon(
+                                        Icons.drag_indicator_rounded,
+                                        color: theme.secondaryText
+                                            .withOpacity(0.5),
+                                        size: 26.0,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           );
                         },
