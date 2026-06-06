@@ -4,32 +4,14 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'player_note_card_model.dart';
-export 'player_note_card_model.dart';
 
 class PlayerNoteCardWidget extends StatefulWidget {
   const PlayerNoteCardWidget({
     super.key,
-    String? action1,
-    String? action2,
-    Color? color,
-    String? currentLocation,
-    String? initials,
-    String? playerName,
-    String? status,
-  })  : action1 = action1 ?? 'Pływanie',
-        action2 = action2 ?? 'Mycie',
-        color = color ?? const Color(0x00000000),
-        currentLocation = currentLocation ?? 'Basen',
-        initials = initials ?? 'AR',
-        playerName = playerName ?? 'Alex Rivera',
-        status = status ?? '';
+    required this.playerName,
+    this.status = 'Dostępne czynności',
+  });
 
-  final String action1;
-  final String action2;
-  final Color color;
-  final String currentLocation;
-  final String initials;
   final String playerName;
   final String status;
 
@@ -38,406 +20,216 @@ class PlayerNoteCardWidget extends StatefulWidget {
 }
 
 class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
-  late PlayerNoteCardModel _model;
+  String? _selectedLocation; // Początkowo null = brak przypisanego pokoju
+  String? _selectedAction; // Początkowo null = brak aktywnej czynności
 
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
+  // Lista lokacji dostępnych w aplikacji
+  final List<String> _locationsList = [
+    'Basen',
+    'Kuchnia',
+    'Jadalnia',
+    'Łazienka',
+    'Pokój'
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _model = createModel(context, () => PlayerNoteCardModel());
-  }
-
-  @override
-  void dispose() {
-    _model.maybeDispose();
-
-    super.dispose();
-  }
+  // Baza danych 3 czynności per pokój
+  final Map<String, List<String>> _roomActivities = {
+    'Basen': ['Pływanie', 'Mycie', 'Unknown'],
+    'Kuchnia': ['Gotowanie', 'Zmywanie naczyń', 'Parzenie kawy'],
+    'Jadalnia': ['Jedzenie obiadu', 'Rozmowa przy stole', 'Ścieranie kurzy'],
+    'Łazienka': ['Kąpiel', 'Pranie', 'Mycie zębów'],
+    'Pokój': ['Oglądanie TV', 'Spanie', 'Czytanie książki'],
+  };
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
+    // Ustawiamy sztywny, jednolity niebieski kolor z góry aplikacji
+    final cardColor = theme.primary;
+
+    // Wyciągamy czynności tylko jeśli wybrano pokój
+    final currentActivities = _selectedLocation != null
+        ? (_roomActivities[_selectedLocation] ?? [])
+        : [];
+
     return Container(
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
+        color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(24.0),
-        shape: BoxShape.rectangle,
         border: Border.all(
-          color: FlutterFlowTheme.of(context).alternate,
+          color: theme.alternate,
           width: 1.0,
         ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 40.0,
-                    height: 40.0,
-                    decoration: BoxDecoration(
-                      color: valueOrDefault<Color>(
-                        widget.color,
-                        FlutterFlowTheme.of(context).primary,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // GÓRA KARTY: Usunięto CircleAvatar, tekst wyrównany do lewej
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.playerName, // RANO, WIECZÓR, itp.
+                        style: theme.titleMedium.override(
+                          fontFamily: GoogleFonts.urbanist().fontFamily,
+                          color: theme.primaryText,
+                          fontWeight: FontWeight.bold,
+                          lineHeight: 1.3,
+                        ),
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: Text(
-                      valueOrDefault<String>(
-                        widget.initials,
-                        'AR',
+                      Text(
+                        widget.status,
+                        style: theme.labelSmall.override(
+                          fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
+                          color: theme.secondaryText,
+                          lineHeight: 1.2,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      style: FlutterFlowTheme.of(context).labelMedium.override(
-                            font: GoogleFonts.spaceGrotesk(
-                              fontWeight: FontWeight.w600,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .labelMedium
-                                  .fontStyle,
-                            ),
-                            color: FlutterFlowTheme.of(context).primaryText,
-                            fontSize: 15.2,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .fontStyle,
-                            lineHeight: 1.2,
-                          ),
-                      overflow: TextOverflow.clip,
-                    ),
+                    ],
                   ),
+                ),
+                FlutterFlowIconButton(
+                  borderRadius: 8.0,
+                  buttonSize: 40.0,
+                  fillColor: Colors.transparent,
+                  icon: Icon(
+                    Icons.edit_note_rounded,
+                    color: theme.secondaryText,
+                    size: 24.0,
+                  ),
+                  onPressed: () async {
+                    context.goNamed(PlayerInvestigationWidget.routeName);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+
+            // LOKACJA: Dropdown (Z ujednoliconym niebieskim kolorem pinezki)
+            Container(
+              decoration: BoxDecoration(
+                color: theme.secondaryBackground,
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    color: cardColor, // Zawsze niebieski
+                    size: 18.0,
+                  ),
+                  const SizedBox(width: 8.0),
                   Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          valueOrDefault<String>(
-                            widget.playerName,
-                            'Alex Rivera',
-                          ),
-                          style: FlutterFlowTheme.of(context)
-                              .titleMedium
-                              .override(
-                                font: GoogleFonts.urbanist(
-                                  fontWeight: FontWeight.bold,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleMedium
-                                      .fontStyle,
-                                ),
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .fontStyle,
-                                lineHeight: 1.3,
-                              ),
-                        ),
-                        Text(
-                          valueOrDefault<String>(
-                            widget.status,
-                            '',
-                          ),
-                          style: FlutterFlowTheme.of(context)
-                              .labelSmall
-                              .override(
-                                font: GoogleFonts.spaceGrotesk(
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .labelSmall
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .labelSmall
-                                      .fontStyle,
-                                ),
-                                color:
-                                    FlutterFlowTheme.of(context).secondaryText,
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .labelSmall
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .labelSmall
-                                    .fontStyle,
-                                lineHeight: 1.2,
-                              ),
-                        ),
-                      ].divide(const SizedBox(height: 4.0)),
-                    ),
-                  ),
-                  FlutterFlowIconButton(
-                    borderRadius: 8.0,
-                    buttonSize: 40.0,
-                    fillColor: Colors.transparent,
-                    icon: Icon(
-                      Icons.edit_note_rounded,
-                      color: FlutterFlowTheme.of(context).secondaryText,
-                      size: 24.0,
-                    ),
-                    onPressed: () async {
-                      context.goNamed(PlayerInvestigationWidget.routeName);
-                    },
-                  ),
-                ].divide(const SizedBox(width: 16.0)),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: BorderRadius.circular(12.0),
-                  shape: BoxShape.rectangle,
-                ),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      16.0, 8.0, 16.0, 8.0),
-                  child: Container(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.location_on_rounded,
-                          color: valueOrDefault<Color>(
-                            widget.color,
-                            FlutterFlowTheme.of(context).primary,
-                          ),
-                          size: 18.0,
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-                            valueOrDefault<String>(
-                              widget.currentLocation,
-                              'Basen',
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.urbanist(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  color:
-                                      FlutterFlowTheme.of(context).primaryText,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                  lineHeight: 1.5,
-                                ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedLocation,
+                        hint: Text(
+                          'Wybierz pokój...',
+                          style: theme.bodyMedium.override(
+                            fontFamily: GoogleFonts.urbanist().fontFamily,
+                            color: theme.secondaryText,
                           ),
                         ),
-                        Icon(
-                          Icons.arrow_drop_down_rounded,
-                          color: FlutterFlowTheme.of(context).secondaryText,
-                          size: 24.0,
+                        isExpanded: true,
+                        icon: Icon(Icons.arrow_drop_down_rounded,
+                            color: theme.secondaryText, size: 24.0),
+                        style: theme.bodyMedium.override(
+                          fontFamily: GoogleFonts.urbanist().fontFamily,
+                          color: theme.primaryText,
+                          lineHeight: 1.5,
                         ),
-                      ].divide(const SizedBox(width: 8.0)),
-                    ),
-                  ),
-                ),
-              ),
-              Wrap(
-                spacing: 4.0,
-                runSpacing: 4.0,
-                alignment: WrapAlignment.start,
-                crossAxisAlignment: WrapCrossAlignment.start,
-                direction: Axis.horizontal,
-                runAlignment: WrapAlignment.start,
-                verticalDirection: VerticalDirection.down,
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    height: 34.0,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: FlutterFlowTheme.of(context).alternate,
-                        width: 1.0,
-                      ),
-                    ),
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          12.0, 0.0, 12.0, 0.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.check_rounded,
-                            color: valueOrDefault<Color>(
-                              widget.color,
-                              FlutterFlowTheme.of(context).primary,
-                            ),
-                            size: 16.0,
-                          ),
-                          Text(
-                            valueOrDefault<String>(
-                              widget.action1,
-                              'Pływanie',
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  font: GoogleFonts.spaceGrotesk(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontStyle,
-                                  ),
-                                  color: valueOrDefault<Color>(
-                                    widget.color,
-                                    FlutterFlowTheme.of(context).primary,
-                                  ),
-                                  fontSize: 14.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontStyle,
-                                  lineHeight: 1.2,
-                                ),
-                          ),
-                        ].divide(const SizedBox(width: 6.0)),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 34.0,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: FlutterFlowTheme.of(context).alternate,
-                        width: 1.0,
-                      ),
-                    ),
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          12.0, 0.0, 12.0, 0.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            valueOrDefault<String>(
-                              widget.action2,
-                              'Mycie',
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  font: GoogleFonts.spaceGrotesk(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontStyle,
-                                  ),
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
-                                  fontSize: 14.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontStyle,
-                                  lineHeight: 1.2,
-                                ),
-                          ),
-                        ].divide(const SizedBox(width: 6.0)),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 34.0,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: FlutterFlowTheme.of(context).alternate,
-                        width: 1.0,
-                      ),
-                    ),
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          12.0, 0.0, 12.0, 0.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Unknown',
-                            style: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  font: GoogleFonts.spaceGrotesk(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontStyle,
-                                  ),
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
-                                  fontSize: 14.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontStyle,
-                                  lineHeight: 1.2,
-                                ),
-                          ),
-                        ].divide(const SizedBox(width: 6.0)),
+                        dropdownColor: theme.secondaryBackground,
+                        items: _locationsList.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _selectedLocation = newValue;
+                            _selectedAction = null;
+                          });
+                        },
                       ),
                     ),
                   ),
                 ],
               ),
-            ].divide(const SizedBox(height: 16.0)),
-          ),
+            ),
+
+            // LISTA 3 CZYNNOŚCI (Zawsze niebieskie akcenty przy wyborze)
+            if (_selectedLocation != null) ...[
+              const SizedBox(height: 16.0),
+              Column(
+                children: currentActivities.map((action) {
+                  final isSelected = _selectedAction == action;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _selectedAction = isSelected ? null : action;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Container(
+                        height: 44.0,
+                        decoration: BoxDecoration(
+                          color: theme.secondaryBackground,
+                          borderRadius: BorderRadius.circular(12.0),
+                          border: Border.all(
+                            color: isSelected ? cardColor : theme.alternate,
+                            width: isSelected ? 2.0 : 1.0,
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isSelected) ...[
+                              Icon(
+                                Icons.check_rounded,
+                                color: cardColor,
+                                size: 16.0,
+                              ),
+                              const SizedBox(width: 8.0),
+                            ],
+                            Text(
+                              action,
+                              style: theme.labelMedium.override(
+                                fontFamily:
+                                    GoogleFonts.spaceGrotesk().fontFamily,
+                                color: isSelected
+                                    ? cardColor
+                                    : theme.secondaryText,
+                                fontSize: 14.0,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ],
         ),
       ),
     );
