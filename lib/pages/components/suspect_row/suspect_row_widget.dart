@@ -31,6 +31,13 @@ class SuspectRowWidget extends StatefulWidget {
 
 class _SuspectRowWidgetState extends State<SuspectRowWidget> {
   late SuspectRowModel _model;
+  String? _selectedNickname;
+  final List<String> _playerNicknames = const [
+    'Cichy Lis',
+    'Nocny Sowa',
+    'Srebrny Strzał',
+    'Biały Cień',
+  ];
 
   @override
   void setState(VoidCallback callback) {
@@ -42,6 +49,7 @@ class _SuspectRowWidgetState extends State<SuspectRowWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => SuspectRowModel());
+    _selectedNickname = widget.assignedNick ? 'Gracz' : null;
   }
 
   @override
@@ -139,25 +147,85 @@ class _SuspectRowWidgetState extends State<SuspectRowWidget> {
                             lineHeight: 1.3,
                           ),
                     ),
-                    wrapWithModel(
-                      model: _model.buttonModel,
-                      updateCallback: () => safeSetState(() {}),
-                      child: ButtonWidget(
-                        content: widget.assignedNick
-                            ? 'SlotValue(\$assigned_nick)'
-                            : 'Przypisz gracza',
-                        icon: Icon(
-                          Icons.person_add_rounded,
-                          color: FlutterFlowTheme.of(context).primary,
-                          size: 16.0,
+                    GestureDetector(
+                      onTap: () async {
+                        final selected = await showModalBottomSheet<String>(
+                          context: context,
+                          builder: (bottomSheetContext) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16.0,
+                                horizontal: 8.0,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0,
+                                      vertical: 8.0,
+                                    ),
+                                    child: Text(
+                                      'Wybierz nick gracza',
+                                      style: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            font: GoogleFonts.urbanist(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                  ..._playerNicknames.map(
+                                    (nick) => ListTile(
+                                      title: Text(nick),
+                                      trailing: _selectedNickname == nick
+                                          ? const Icon(
+                                              Icons.check,
+                                              color: Colors.green,
+                                            )
+                                          : null,
+                                      onTap: () {
+                                        Navigator.pop(bottomSheetContext, nick);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8.0),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+
+                        if (selected != null) {
+                          setState(() {
+                            _selectedNickname = selected;
+                          });
+                        }
+                      },
+                      child: wrapWithModel(
+                        model: _model.buttonModel,
+                        updateCallback: () => safeSetState(() {}),
+                        child: ButtonWidget(
+                          content: _selectedNickname != null
+                              ? '$_selectedNickname'
+                              : 'Przypisz gracza',
+                          icon: Icon(
+                            Icons.person_add_rounded,
+                            color: FlutterFlowTheme.of(context).primary,
+                            size: 16.0,
+                          ),
+                          iconPresent: true,
+                          iconEndPresent: false,
+                          variant: 'ghost',
+                          size: 'small',
+                          fullWidth: false,
+                          loading: false,
+                          disabled: false,
                         ),
-                        iconPresent: true,
-                        iconEndPresent: false,
-                        variant: 'ghost',
-                        size: 'small',
-                        fullWidth: false,
-                        loading: false,
-                        disabled: false,
                       ),
                     ),
                   ].divide(const SizedBox(height: 4.0)),
