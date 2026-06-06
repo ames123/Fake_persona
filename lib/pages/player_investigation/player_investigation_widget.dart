@@ -415,41 +415,16 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         mainAxisSize: MainAxisSize.min,
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .stretch, // Rozciąga kafelki na pełną szerokość
                                         children: [
-                                          Text(
-                                            'Rano',
-                                            style: FlutterFlowTheme.of(context)
-                                                .labelSmall
-                                                .override(
-                                                  font:
-                                                      GoogleFonts.spaceGrotesk(
-                                                    fontWeight: FontWeight.w800,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .labelSmall
-                                                            .fontStyle,
-                                                  ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelSmall
-                                                          .fontStyle,
-                                                  lineHeight: 1.2,
-                                                ),
-                                          ),
                                           wrapWithModel(
                                             model: _model.scheduleItemModel1,
                                             updateCallback: () =>
                                                 safeSetState(() {}),
                                             child: ScheduleItemWidget(
+                                              leadingIcon: Icons.wb_sunny,
+                                              period: 'Rano',
                                               activity: 'Gotowanie',
                                               color:
                                                   FlutterFlowTheme.of(context)
@@ -457,38 +432,14 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                               time: '',
                                             ),
                                           ),
-                                          Text(
-                                            'Południe',
-                                            style: FlutterFlowTheme.of(context)
-                                                .labelSmall
-                                                .override(
-                                                  font:
-                                                      GoogleFonts.spaceGrotesk(
-                                                    fontWeight: FontWeight.w800,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .labelSmall
-                                                            .fontStyle,
-                                                  ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelSmall
-                                                          .fontStyle,
-                                                  lineHeight: 1.2,
-                                                ),
-                                          ),
                                           wrapWithModel(
                                             model: _model.scheduleItemModel2,
                                             updateCallback: () =>
                                                 safeSetState(() {}),
                                             child: ScheduleItemWidget(
+                                              leadingIcon:
+                                                  Icons.restaurant_rounded,
+                                              period: 'Południe',
                                               activity: 'Jedzenie',
                                               color:
                                                   FlutterFlowTheme.of(context)
@@ -496,38 +447,13 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                               time: '',
                                             ),
                                           ),
-                                          Text(
-                                            'Popołudnie',
-                                            style: FlutterFlowTheme.of(context)
-                                                .labelSmall
-                                                .override(
-                                                  font:
-                                                      GoogleFonts.spaceGrotesk(
-                                                    fontWeight: FontWeight.w800,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .labelSmall
-                                                            .fontStyle,
-                                                  ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelSmall
-                                                          .fontStyle,
-                                                  lineHeight: 1.2,
-                                                ),
-                                          ),
                                           wrapWithModel(
                                             model: _model.scheduleItemModel3,
                                             updateCallback: () =>
                                                 safeSetState(() {}),
                                             child: ScheduleItemWidget(
+                                              leadingIcon: Icons.park_rounded,
+                                              period: 'Popołudnie',
                                               activity: 'Czas wolny',
                                               color:
                                                   FlutterFlowTheme.of(context)
@@ -535,7 +461,39 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                               time: '',
                                             ),
                                           ),
-                                        ].divide(const SizedBox(height: 8.0)),
+                                          wrapWithModel(
+                                            model: _model.scheduleItemModel4,
+                                            updateCallback: () =>
+                                                safeSetState(() {}),
+                                            child: ScheduleItemWidget(
+                                              leadingIcon:
+                                                  Icons.dark_mode_rounded,
+                                              period: 'Wieczór',
+                                              activity: 'Czytanie książki',
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryText,
+                                              time: '',
+                                            ),
+                                          ),
+                                          wrapWithModel(
+                                            model: _model.scheduleItemModel5,
+                                            updateCallback: () =>
+                                                safeSetState(() {}),
+                                            child: ScheduleItemWidget(
+                                              leadingIcon:
+                                                  Icons.bedtime_rounded,
+                                              period: 'Noc',
+                                              activity: 'Sen',
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              time: '',
+                                            ),
+                                          ),
+                                        ].divide(const SizedBox(
+                                            height:
+                                                8.0)), // Zachowany oryginalny odstęp między kafelkami
                                       ),
                                     ].divide(const SizedBox(height: 16.0)),
                                   ),

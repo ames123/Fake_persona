@@ -353,7 +353,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                       child: Icon(
                                         Icons.drag_indicator_rounded,
                                         color: theme.secondaryText
-                                            .withOpacity(0.5),
+                                            .withValues(alpha: 0.5),
                                         size: 26.0,
                                       ),
                                     ),

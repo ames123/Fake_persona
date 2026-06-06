@@ -26,6 +26,10 @@ class PlayerInvestigationModel
   late ScheduleItemModel scheduleItemModel2;
   // Model for ScheduleItem.
   late ScheduleItemModel scheduleItemModel3;
+  // Model for ScheduleItem.
+  late ScheduleItemModel scheduleItemModel4;
+  // Model for ScheduleItem.
+  late ScheduleItemModel scheduleItemModel5;
   // Model for SuspectRow.
   late SuspectRowModel suspectRowModel1;
   // Model for SuspectRow.
@@ -49,6 +53,8 @@ class PlayerInvestigationModel
     scheduleItemModel1 = createModel(context, () => ScheduleItemModel());
     scheduleItemModel2 = createModel(context, () => ScheduleItemModel());
     scheduleItemModel3 = createModel(context, () => ScheduleItemModel());
+    scheduleItemModel4 = createModel(context, () => ScheduleItemModel());
+    scheduleItemModel5 = createModel(context, () => ScheduleItemModel());
     suspectRowModel1 = createModel(context, () => SuspectRowModel());
     suspectRowModel2 = createModel(context, () => SuspectRowModel());
     suspectRowModel3 = createModel(context, () => SuspectRowModel());
@@ -67,6 +73,8 @@ class PlayerInvestigationModel
     scheduleItemModel1.dispose();
     scheduleItemModel2.dispose();
     scheduleItemModel3.dispose();
+    scheduleItemModel4.dispose();
+    scheduleItemModel5.dispose();
     suspectRowModel1.dispose();
     suspectRowModel2.dispose();
     suspectRowModel3.dispose();

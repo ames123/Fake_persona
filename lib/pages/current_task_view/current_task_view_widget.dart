@@ -8,7 +8,6 @@ import 'dart:math' as math;
 // Importy komponentów i modeli na wzór ProfileSetup
 import '/pages/components/time_slot/time_slot_widget.dart';
 import '/pages/current_task_view/current_task_view_model.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 
 class CurrentTaskViewWidget extends StatefulWidget {
   const CurrentTaskViewWidget({super.key});
