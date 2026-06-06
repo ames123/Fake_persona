@@ -9,10 +9,12 @@ class PlayerNoteCardWidget extends StatefulWidget {
   const PlayerNoteCardWidget({
     super.key,
     required this.playerName,
+    this.color,
     this.status = 'Dostępne czynności',
   });
 
   final String playerName;
+  final Color? color;
   final String status;
 
   @override
@@ -23,52 +25,108 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
   String? _selectedLocation;
   String? _selectedAction;
 
+  // 1. Zaktualizowana pełna lista pokoi z Twojej tabeli
   final List<String> _locationsList = [
-    'Basen',
-    'Kuchnia',
-    'Jadalnia',
+    'Kuchnia z jadalnią',
+    'Salon',
+    'Gabinet / Biblioteka',
+    'Ogród',
+    'Siłownia',
     'Łazienka',
-    'Pokój'
+    'Pokój Medyczny',
+    'Piwnica / Korytarz',
+    'Taras / Weranda',
+    'Pokój Rozrywki',
+    'Pracownia Naukowa',
+    'Kącik Artysty',
+    'Basen'
   ];
 
-  // NOWOŚĆ: Każda czynność została połączona w parę z odpowiednią ikoną w bazie danych
+  // 2. Pełna baza danych odwzorowująca Twoją tabelę 1:1 wraz z dopasowanymi ikonami
   final Map<String, List<Map<String, dynamic>>> _roomActivitiesWithIcons = {
-    'Basen': [
-      {'name': 'Pływanie', 'icon': Icons.pool_rounded},
-      {'name': 'Mycie', 'icon': Icons.clean_hands_rounded},
-      {'name': 'Unknown', 'icon': Icons.help_outline_rounded},
-    ],
-    'Kuchnia': [
+    'Kuchnia z jadalnią': [
       {'name': 'Gotowanie', 'icon': Icons.soup_kitchen_rounded},
-      {'name': 'Zmywanie naczyń', 'icon': Icons.local_laundry_service_rounded},
-      {'name': 'Parzenie kawy', 'icon': Icons.coffee_rounded},
+      {'name': 'Szukanie zapasów', 'icon': Icons.search_rounded},
+      {'name': 'Jedzenie', 'icon': Icons.restaurant_rounded},
     ],
-    'Jadalnia': [
-      {'name': 'Jedzenie obiadu', 'icon': Icons.restaurant_rounded},
-      {'name': 'Rozmowa przy stole', 'icon': Icons.forum_rounded},
-      {'name': 'Ścieranie kurzy', 'icon': Icons.cleaning_services_rounded},
+    'Salon': [
+      {'name': 'Granie na PC', 'icon': Icons.computer_rounded},
+      {'name': 'Próba roli', 'icon': Icons.theater_comedy_rounded},
+      {'name': 'Oglądanie', 'icon': Icons.tv_rounded},
+    ],
+    'Gabinet / Biblioteka': [
+      {'name': 'Pisanie książki', 'icon': Icons.menu_book_rounded},
+      {'name': 'Eksperyment', 'icon': Icons.science_rounded},
+      {'name': 'Czytanie', 'icon': Icons.auto_stories_rounded},
+    ],
+    'Ogród': [
+      {'name': 'Pielęgnacja roślin', 'icon': Icons.yard_rounded},
+      {'name': 'Trening', 'icon': Icons.fitness_center_rounded},
+      {'name': 'Sport', 'icon': Icons.sports_volleyball_rounded},
+    ],
+    'Siłownia': [
+      {'name': 'Trening', 'icon': Icons.fitness_center_rounded},
+      {'name': 'Badanie lekarskie', 'icon': Icons.medical_services_rounded},
+      {'name': 'Słuchanie muzyki', 'icon': Icons.headphones_rounded},
+      {
+        'name': 'Przebieranie się',
+        'icon': Icons.checkroom_rounded
+      }, // Obsługa 4. akcji
     ],
     'Łazienka': [
-      {'name': 'Kąpiel', 'icon': Icons.bathtub_rounded},
-      {'name': 'Pranie', 'icon': Icons.dry_cleaning_rounded},
-      {'name': 'Mycie zębów', 'icon': Icons.brush_rounded},
+      {'name': 'Kradzież', 'icon': Icons.gavel_rounded},
+      {'name': 'Mycie', 'icon': Icons.clean_hands_rounded},
+      {'name': 'Ścieranie kurzu', 'icon': Icons.cleaning_services_rounded},
     ],
-    'Pokój': [
-      {'name': 'Oglądanie TV', 'icon': Icons.tv_rounded},
-      {'name': 'Spanie', 'icon': Icons.bed_rounded},
-      {'name': 'Czytanie książki', 'icon': Icons.menu_book_rounded},
+    'Pokój Medyczny': [
+      {'name': 'Badanie lekarskie', 'icon': Icons.medical_services_rounded},
+      {'name': 'Dezynfekcja', 'icon': Icons.vaccines_rounded},
+      {'name': 'Odpoczynek', 'icon': Icons.hotel_rounded},
+    ],
+    'Piwnica / Korytarz': [
+      {'name': 'Kradzież', 'icon': Icons.gavel_rounded},
+      {'name': 'Ścieranie kurzu', 'icon': Icons.cleaning_services_rounded},
+      {'name': 'Szukanie zapasów', 'icon': Icons.search_rounded},
+    ],
+    'Taras / Weranda': [
+      {'name': 'Pielęgnacja roślin', 'icon': Icons.yard_rounded},
+      {'name': 'Gotowanie', 'icon': Icons.soup_kitchen_rounded},
+      {'name': 'Jedzenie', 'icon': Icons.restaurant_rounded},
+    ],
+    'Pokój Rozrywki': [
+      {'name': 'Granie na PC', 'icon': Icons.sports_esports_rounded},
+      {'name': 'Odpoczynek', 'icon': Icons.chair_rounded},
+      {'name': 'Słuchanie muzyki', 'icon': Icons.music_note_rounded},
+    ],
+    'Pracownia Naukowa': [
+      {'name': 'Eksperyment', 'icon': Icons.biotech_rounded},
+      {'name': 'Badanie lekarskie', 'icon': Icons.health_and_safety_rounded},
+      {'name': 'Czytanie', 'icon': Icons.menu_book_rounded},
+    ],
+    'Kącik Artysty': [
+      {'name': 'Pisanie książki', 'icon': Icons.edit_note_rounded},
+      {'name': 'Próba roli', 'icon': Icons.theater_comedy_rounded},
+      {'name': 'Oglądanie', 'icon': Icons.movie_rounded},
+    ],
+    'Basen': [
+      {'name': 'Sport', 'icon': Icons.pool_rounded},
+      {'name': 'Mycie', 'icon': Icons.waves_rounded},
+      {'name': 'Dezynfekcja', 'icon': Icons.sanitizer_rounded},
+      {
+        'name': 'Przebieranie się',
+        'icon': Icons.checkroom_rounded
+      }, // Obsługa 4. akcji
     ],
   };
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final cardColor = theme.primary;
+    final cardColor = widget.color ?? theme.primary;
 
-    // Pobranie obiektów czynności (nazwa + ikona) dla wybranej lokacji
     final currentActivities = _selectedLocation != null
-        ? (_roomActivitiesWithIcons[_selectedLocation] ?? [])
-        : [];
+        ? (_roomActivitiesWithIcons[_selectedLocation] ?? const [])
+        : const [];
 
     return Container(
       decoration: BoxDecoration(
@@ -131,7 +189,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
             ),
             const SizedBox(height: 16.0),
 
-            // LOKACJA: Dropdown pokoju
+            // LOKACJA: Dropdown
             Container(
               decoration: BoxDecoration(
                 color: theme.secondaryBackground,
@@ -186,13 +244,13 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
               ),
             ),
 
-            // LISTA 3 CZYNNOŚCI (Z ikonami zależnymi od wybranej akcji)
-            if (_selectedLocation != null) ...[
+            // LISTA 3 CZYNNOŚCI
+            if (_selectedLocation != null && currentActivities.isNotEmpty) ...[
               const SizedBox(height: 16.0),
               Column(
                 children: currentActivities.map((activity) {
-                  final String actionName = activity['name'];
-                  final IconData actionIcon = activity['icon'];
+                  final String actionName = activity['name'] as String;
+                  final IconData actionIcon = activity['icon'] as IconData;
                   final isSelected = _selectedAction == actionName;
 
                   return Padding(
@@ -218,7 +276,6 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Renderowanie ikony zamiast uniwersalnego ptaszka
                             Icon(
                               actionIcon,
                               color:
