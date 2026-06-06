@@ -171,39 +171,6 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
                           ),
                         ].divide(const SizedBox(height: 4.0)),
                       ),
-                      Container(
-                        width: 44.0,
-                        height: 44.0,
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).tertiary,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: const AlignmentDirectional(0.0, 0.0),
-                        child: Text(
-                          'JD',
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          style: FlutterFlowTheme.of(context)
-                              .labelMedium
-                              .override(
-                                font: GoogleFonts.spaceGrotesk(
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontStyle,
-                                ),
-                                color: FlutterFlowTheme.of(context).onAccent,
-                                fontSize: 16.72,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .labelMedium
-                                    .fontStyle,
-                                lineHeight: 1.2,
-                              ),
-                          overflow: TextOverflow.clip,
-                        ),
-                      ),
                     ],
                   ),
                 ),
