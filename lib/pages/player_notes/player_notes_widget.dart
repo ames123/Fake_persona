@@ -196,34 +196,90 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
               ),
             ),
 
-            // Dolna nawigacja (Bez zmian)
+            // Dolna nawigacja
             Container(
-              decoration: BoxDecoration(color: theme.secondaryBackground),
+              decoration: BoxDecoration(
+                color: theme.secondaryBackground,
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 24.0, vertical: 16.0),
                 child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // PRZYCISK 1: Profile
                     Expanded(
+                      flex: 1,
                       child: GestureDetector(
-                        onTap: () => context
-                            .goNamed(PlayerInvestigationWidget.routeName),
-                        child: ButtonWidget(
+                        onTap: () => context.goNamed(
+                          PlayerInvestigationWidget.routeName,
+                          extra: {
+                            kTransitionInfoKey: const TransitionInfo(
+                              hasTransition: true,
+                              transitionType: PageTransitionType.rightToLeft,
+                              duration: Duration(milliseconds: 300),
+                            ),
+                          },
+                        ),
+                        child: wrapWithModel(
+                          model: _model.buttonModel1,
+                          updateCallback: () => safeSetState(() {}),
+                          child: ButtonWidget(
                             content: 'Profile',
-                            icon: Icon(Icons.person_rounded, size: 16.0),
+                            icon: Icon(
+                              Icons.person_rounded,
+                              color: theme.primaryText,
+                              size: 16.0,
+                            ),
+                            iconPresent: true,
+                            iconEndPresent: false,
                             variant: 'outline',
-                            fullWidth: true),
+                            size:
+                                'medium', // Przywrócenie średniego rozmiaru zapobiega "pogrubieniu"
+                            fullWidth: true,
+                            loading: false,
+                            disabled: false,
+                          ),
+                        ),
                       ),
                     ),
+
+                    // PRZYCISK 2: Mój kalendarz
                     Expanded(
+                      flex: 1,
                       child: GestureDetector(
-                        onTap: () =>
-                            context.goNamed(ScheduleOrganizerWidget.routeName),
-                        child: ButtonWidget(
+                        onTap: () => context.goNamed(
+                          ScheduleOrganizerWidget.routeName,
+                          extra: {
+                            kTransitionInfoKey: const TransitionInfo(
+                              hasTransition: true,
+                              transitionType: PageTransitionType.rightToLeft,
+                              duration: Duration(milliseconds: 300),
+                            ),
+                          },
+                        ),
+                        child: wrapWithModel(
+                          model: _model.buttonModel2,
+                          updateCallback: () => safeSetState(() {}),
+                          child: ButtonWidget(
                             content: 'Mój kalendarz',
-                            icon: Icon(Icons.event_note_rounded, size: 16.0),
+                            icon: Icon(
+                              Icons.event_note_rounded,
+                              color: theme.onPrimary,
+                              size: 16.0,
+                            ),
+                            iconPresent: true,
+                            iconEndPresent: false,
                             variant: 'primary',
-                            fullWidth: true),
+                            size:
+                                'medium', // Przywrócenie średniego rozmiaru zapobiega "pogrubieniu"
+                            fullWidth: true,
+                            loading: false,
+                            disabled: false,
+                          ),
+                        ),
                       ),
                     ),
                   ].divide(const SizedBox(width: 16.0)),
