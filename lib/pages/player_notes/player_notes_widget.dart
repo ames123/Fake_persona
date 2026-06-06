@@ -59,7 +59,7 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Nagłówek strony (Niezmieniony)
+            // Nagłówek strony (Oryginalny)
             Container(
               decoration: BoxDecoration(
                 color: theme.secondaryBackground,
@@ -113,7 +113,7 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
               ),
             ),
 
-            // Inicjały graczy u góry (Niezmienione)
+            // Inicjały graczy u góry (Oryginalne)
             Container(
               height: 76.0,
               color: theme.secondaryBackground,
@@ -174,23 +174,27 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
               ),
             ),
 
-            // Lista dedykowanych kart (Czyste przekazanie bez migania ekranu)
+            // Poprawiona lista: Dodany ValueKey dla wyeliminowania błędu TypeError
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(16.0),
                 itemCount: _dayPeriods.length,
                 itemBuilder: (context, index) {
+                  final period = _dayPeriods[index];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: PlayerNoteCardWidget(
-                      playerName: _dayPeriods[index],
+                      key: ValueKey(
+                          period), // JAWNY KLUCZ DLA WIDGETU DYNAMICZNEGO
+                      playerName: period,
+                      color: theme.primary,
                     ),
                   );
                 },
               ),
             ),
 
-            // Dolna nawigacja (Oryginalna i sprawna)
+            // Dolna nawigacja (Oryginalna)
             Container(
               decoration: BoxDecoration(
                 color: theme.secondaryBackground,

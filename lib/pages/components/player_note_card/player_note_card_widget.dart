@@ -20,10 +20,9 @@ class PlayerNoteCardWidget extends StatefulWidget {
 }
 
 class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
-  String? _selectedLocation; // Początkowo null = brak przypisanego pokoju
-  String? _selectedAction; // Początkowo null = brak aktywnej czynności
+  String? _selectedLocation;
+  String? _selectedAction;
 
-  // Lista lokacji dostępnych w aplikacji
   final List<String> _locationsList = [
     'Basen',
     'Kuchnia',
@@ -32,25 +31,43 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
     'Pokój'
   ];
 
-  // Baza danych 3 czynności per pokój
-  final Map<String, List<String>> _roomActivities = {
-    'Basen': ['Pływanie', 'Mycie', 'Unknown'],
-    'Kuchnia': ['Gotowanie', 'Zmywanie naczyń', 'Parzenie kawy'],
-    'Jadalnia': ['Jedzenie obiadu', 'Rozmowa przy stole', 'Ścieranie kurzy'],
-    'Łazienka': ['Kąpiel', 'Pranie', 'Mycie zębów'],
-    'Pokój': ['Oglądanie TV', 'Spanie', 'Czytanie książki'],
+  // NOWOŚĆ: Każda czynność została połączona w parę z odpowiednią ikoną w bazie danych
+  final Map<String, List<Map<String, dynamic>>> _roomActivitiesWithIcons = {
+    'Basen': [
+      {'name': 'Pływanie', 'icon': Icons.pool_rounded},
+      {'name': 'Mycie', 'icon': Icons.clean_hands_rounded},
+      {'name': 'Unknown', 'icon': Icons.help_outline_rounded},
+    ],
+    'Kuchnia': [
+      {'name': 'Gotowanie', 'icon': Icons.soup_kitchen_rounded},
+      {'name': 'Zmywanie naczyń', 'icon': Icons.local_laundry_service_rounded},
+      {'name': 'Parzenie kawy', 'icon': Icons.coffee_rounded},
+    ],
+    'Jadalnia': [
+      {'name': 'Jedzenie obiadu', 'icon': Icons.restaurant_rounded},
+      {'name': 'Rozmowa przy stole', 'icon': Icons.forum_rounded},
+      {'name': 'Ścieranie kurzy', 'icon': Icons.cleaning_services_rounded},
+    ],
+    'Łazienka': [
+      {'name': 'Kąpiel', 'icon': Icons.bathtub_rounded},
+      {'name': 'Pranie', 'icon': Icons.dry_cleaning_rounded},
+      {'name': 'Mycie zębów', 'icon': Icons.brush_rounded},
+    ],
+    'Pokój': [
+      {'name': 'Oglądanie TV', 'icon': Icons.tv_rounded},
+      {'name': 'Spanie', 'icon': Icons.bed_rounded},
+      {'name': 'Czytanie książki', 'icon': Icons.menu_book_rounded},
+    ],
   };
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-
-    // Ustawiamy sztywny, jednolity niebieski kolor z góry aplikacji
     final cardColor = theme.primary;
 
-    // Wyciągamy czynności tylko jeśli wybrano pokój
+    // Pobranie obiektów czynności (nazwa + ikona) dla wybranej lokacji
     final currentActivities = _selectedLocation != null
-        ? (_roomActivities[_selectedLocation] ?? [])
+        ? (_roomActivitiesWithIcons[_selectedLocation] ?? [])
         : [];
 
     return Container(
@@ -68,7 +85,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // GÓRA KARTY: Usunięto CircleAvatar, tekst wyrównany do lewej
+            // GÓRA KARTY
             Row(
               mainAxisSize: MainAxisSize.max,
               children: [
@@ -78,7 +95,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.playerName, // RANO, WIECZÓR, itp.
+                        widget.playerName,
                         style: theme.titleMedium.override(
                           fontFamily: GoogleFonts.urbanist().fontFamily,
                           color: theme.primaryText,
@@ -114,7 +131,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
             ),
             const SizedBox(height: 16.0),
 
-            // LOKACJA: Dropdown (Z ujednoliconym niebieskim kolorem pinezki)
+            // LOKACJA: Dropdown pokoju
             Container(
               decoration: BoxDecoration(
                 color: theme.secondaryBackground,
@@ -126,7 +143,7 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                 children: [
                   Icon(
                     Icons.location_on_rounded,
-                    color: cardColor, // Zawsze niebieski
+                    color: cardColor,
                     size: 18.0,
                   ),
                   const SizedBox(width: 8.0),
@@ -169,19 +186,21 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
               ),
             ),
 
-            // LISTA 3 CZYNNOŚCI (Zawsze niebieskie akcenty przy wyborze)
+            // LISTA 3 CZYNNOŚCI (Z ikonami zależnymi od wybranej akcji)
             if (_selectedLocation != null) ...[
               const SizedBox(height: 16.0),
               Column(
-                children: currentActivities.map((action) {
-                  final isSelected = _selectedAction == action;
+                children: currentActivities.map((activity) {
+                  final String actionName = activity['name'];
+                  final IconData actionIcon = activity['icon'];
+                  final isSelected = _selectedAction == actionName;
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: InkWell(
                       onTap: () {
                         setState(() {
-                          _selectedAction = isSelected ? null : action;
+                          _selectedAction = isSelected ? null : actionName;
                         });
                       },
                       borderRadius: BorderRadius.circular(12.0),
@@ -199,16 +218,16 @@ class _PlayerNoteCardWidgetState extends State<PlayerNoteCardWidget> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (isSelected) ...[
-                              Icon(
-                                Icons.check_rounded,
-                                color: cardColor,
-                                size: 16.0,
-                              ),
-                              const SizedBox(width: 8.0),
-                            ],
+                            // Renderowanie ikony zamiast uniwersalnego ptaszka
+                            Icon(
+                              actionIcon,
+                              color:
+                                  isSelected ? cardColor : theme.secondaryText,
+                              size: 18.0,
+                            ),
+                            const SizedBox(width: 8.0),
                             Text(
-                              action,
+                              actionName,
                               style: theme.labelMedium.override(
                                 fontFamily:
                                     GoogleFonts.spaceGrotesk().fontFamily,
