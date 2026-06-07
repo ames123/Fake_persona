@@ -141,7 +141,7 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final screenSize = MediaQuery.of(context).size;
-    final maxDragDistance = screenSize.height * 0.6;
+    final maxDragDistance = screenSize.height * 0.75;
 
     // Pobieramy dane zapisanego profilu gracza ze wspólnego stanu
     final profile = ProfileState();
