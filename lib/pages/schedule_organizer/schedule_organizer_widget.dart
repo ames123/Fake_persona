@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'schedule_organizer_model.dart';
 import '/profile_state.dart';
+// POPRAWKA: Importujemy GameState, aby pobrać i nasłuchiwać globalny timer
+import '/game_state.dart';
 export 'schedule_organizer_model.dart';
 
 class ScheduleOrganizerWidget extends StatefulWidget {
@@ -33,11 +35,16 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
     super.initState();
     _model = createModel(context, () => ScheduleOrganizerModel());
 
+    // POPRAWKA: Podpinamy system powiadomień timera do odświeżania tego widoku
+    GameState().onTimeChanged = () {
+      if (mounted) {
+        safeSetState(() {});
+      }
+    };
+
     final profile = ProfileState();
     final routine = profile.savedUserRoutine;
 
-    // POPRAWKA: Pole 'active' sprawdza teraz logicznie, czy klucz pory dnia
-    // zgadza się z wartością zapisanej powyżej zmiennej currentActivePeriod
     _timeSlots = [
       {
         'id': 'ts1',
@@ -128,6 +135,8 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
 
   @override
   void dispose() {
+    // POPRAWKA: Bezpiecznie odpinamy timer przy zamykaniu okna
+    GameState().onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
@@ -206,7 +215,8 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
                                 size: 16.0,
                               ),
                               Text(
-                                '04:52',
+                                // POPRAWKA: Pobieramy aktualny czas z centralnego Timera
+                                GameState().formattedTime,
                                 style: FlutterFlowTheme.of(context)
                                     .labelLarge
                                     .override(

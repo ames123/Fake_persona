@@ -6,7 +6,7 @@ import '/pages/components/profile_tab/profile_tab_widget.dart';
 import '/pages/components/schedule_item/schedule_item_widget.dart';
 import '/pages/components/guess_row/guess_row_widget.dart';
 import '/profile_state.dart';
-// POPRAWKA: Importujemy stan gry z listą aktywnych graczy
+// POPRAWKA: Importujemy stan gry z listą aktywnych graczy i timerem
 import '/game_state.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -69,7 +69,6 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
     'Czas wolny': Icons.accessibility_new_rounded,
   };
 
-  // Paleta kolorów awatarów dla dynamicznych wierszy
   final List<Color> _playerColors = [
     const Color(0xFF4B39EF),
     const Color(0xFF39D2C0),
@@ -83,10 +82,21 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PlayerInvestigationModel());
+
+    // POPRAWKA: Przekazujemy context, aby system wiedział gdzie wykonać automatyczne przekierowanie
+    GameState().startTimer(context);
+
+    GameState().onTimeChanged = () {
+      if (mounted) {
+        safeSetState(() {});
+      }
+    };
   }
 
   @override
   void dispose() {
+    // POPRAWKA: Odpinamy callback, aby nie rzucać setState na martwym widżecie
+    GameState().onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
@@ -158,7 +168,8 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                 Icon(Icons.timer_rounded,
                                     color: theme.error, size: 16.0),
                                 Text(
-                                  '04:52',
+                                  // POPRAWKA: Pobieramy sformatowany czas MM:SS prosto z GameState()
+                                  GameState().formattedTime,
                                   style: theme.labelLarge.override(
                                     fontFamily:
                                         GoogleFonts.spaceGrotesk().fontFamily,
@@ -199,292 +210,266 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
               flex: 1,
               child: SingleChildScrollView(
                 primary: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Column(
                         mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Profile',
-                                style: theme.labelSmall.override(
-                                  fontFamily:
-                                      GoogleFonts.spaceGrotesk().fontFamily,
-                                  color: theme.secondaryText,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: availableRoles
-                                      .asMap()
-                                      .entries
-                                      .map((entry) {
-                                        final int index = entry.key;
-                                        final String role = entry.value;
-                                        final bool isActive =
-                                            _activeRoleName == role;
-
-                                        final String initials = role.length >= 2
-                                            ? role.substring(0, 2)
-                                            : role.toUpperCase();
-
-                                        return GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _activeRoleName = role;
-                                            });
-                                          },
-                                          child: wrapWithModel(
-                                            model: index == 0
-                                                ? _model.profileTabModel1
-                                                : index == 1
-                                                    ? _model.profileTabModel2
-                                                    : index == 2
-                                                        ? _model
-                                                            .profileTabModel3
-                                                        : _model
-                                                            .profileTabModel4,
-                                            updateCallback: () =>
-                                                safeSetState(() {}),
-                                            child: ProfileTabWidget(
-                                              initials: initials,
-                                              name: role,
-                                              active: isActive,
-                                              onTap: '',
-                                            ),
-                                          ),
-                                        );
-                                      })
-                                      .toList()
-                                      .divide(const SizedBox(width: 8.0)),
-                                ),
-                              ),
-                            ].divide(const SizedBox(height: 16.0)),
-                          ),
-
-                          // KAFELEK HARMONOGRAMU
-                          Container(
-                            decoration: BoxDecoration(
-                              color: theme.secondaryBackground,
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 20.0,
-                                  color: theme.primary13,
-                                  offset: const Offset(0.0, 8.0),
-                                )
-                              ],
-                              borderRadius: BorderRadius.circular(32.0),
-                              border: Border.all(
-                                  color: theme.primary30, width: 1.0),
+                          Text(
+                            'Profile',
+                            style: theme.labelSmall.override(
+                              fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
+                              color: theme.secondaryText,
+                              fontWeight: FontWeight.bold,
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
+                          ),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: availableRoles
+                                  .asMap()
+                                  .entries
+                                  .map((entry) {
+                                    final int index = entry.key;
+                                    final String role = entry.value;
+                                    final bool isActive =
+                                        _activeRoleName == role;
+
+                                    final String initials = role.length >= 2
+                                        ? role.substring(0, 2)
+                                        : role.toUpperCase();
+
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _activeRoleName = role;
+                                        });
+                                      },
+                                      child: wrapWithModel(
+                                        model: index == 0
+                                            ? _model.profileTabModel1
+                                            : index == 1
+                                                ? _model.profileTabModel2
+                                                : index == 2
+                                                    ? _model.profileTabModel3
+                                                    : _model.profileTabModel4,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: ProfileTabWidget(
+                                          initials: initials,
+                                          name: role,
+                                          active: isActive,
+                                          onTap: '',
+                                        ),
+                                      ),
+                                    );
+                                  })
+                                  .toList()
+                                  .divide(const SizedBox(width: 8.0)),
+                            ),
+                          ),
+                        ].divide(const SizedBox(height: 16.0)),
+                      ),
+
+                      // KAFELEK HARMONOGRAMU
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.secondaryBackground,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 20.0,
+                              color: theme.primary13,
+                              offset: const Offset(0.0, 8.0),
+                            )
+                          ],
+                          borderRadius: BorderRadius.circular(32.0),
+                          border:
+                              Border.all(color: theme.primary30, width: 1.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Kalendarz $genitiveName',
+                                        style: theme.titleMedium.override(
+                                          fontFamily:
+                                              GoogleFonts.urbanist().fontFamily,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Główny harmonogram dnia',
+                                        style: theme.bodySmall.override(
+                                          fontFamily:
+                                              GoogleFonts.urbanist().fontFamily,
+                                          color: theme.secondaryText,
+                                        ),
+                                      ),
+                                    ].divide(const SizedBox(height: 4.0)),
+                                  ),
+                                  Icon(Icons.calendar_today_rounded,
+                                      color: theme.primary, size: 24.0),
+                                ],
+                              ),
+                              Divider(
+                                  height: 16.0,
+                                  thickness: 1.0,
+                                  color: theme.alternate),
+
+                              // Lista kafelków czasu
+                              Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Kalendarz $genitiveName',
-                                            style: theme.titleMedium.override(
-                                              fontFamily: GoogleFonts.urbanist()
-                                                  .fontFamily,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text(
-                                            'Główny harmonogram dnia',
-                                            style: theme.bodySmall.override(
-                                              fontFamily: GoogleFonts.urbanist()
-                                                  .fontFamily,
-                                              color: theme.secondaryText,
-                                            ),
-                                          ),
-                                        ].divide(const SizedBox(height: 4.0)),
-                                      ),
-                                      Icon(Icons.calendar_today_rounded,
-                                          color: theme.primary, size: 24.0),
-                                    ],
+                                  ScheduleItemWidget(
+                                    leadingIcon: _getIconForActivity(
+                                        currentRoutine['RANO'],
+                                        Icons.wb_sunny_rounded),
+                                    period: 'Rano',
+                                    activity:
+                                        currentRoutine['RANO'] ?? 'Brak danych',
+                                    color: theme.secondary,
+                                    time: '',
                                   ),
-                                  Divider(
-                                      height: 16.0,
-                                      thickness: 1.0,
-                                      color: theme.alternate),
-
-                                  // Lista kafelków czasu
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      ScheduleItemWidget(
-                                        leadingIcon: _getIconForActivity(
-                                            currentRoutine['RANO'],
-                                            Icons.wb_sunny_rounded),
-                                        period: 'Rano',
-                                        activity: currentRoutine['RANO'] ??
-                                            'Brak danych',
-                                        color: theme.secondary,
-                                        time: '',
-                                      ),
-                                      ScheduleItemWidget(
-                                        leadingIcon: _getIconForActivity(
-                                            currentRoutine['POŁUDNIE'],
-                                            Icons.restaurant_rounded),
-                                        period: 'Południe',
-                                        activity: currentRoutine['POŁUDNIE'] ??
-                                            'Brak danych',
-                                        color: theme.tertiary,
-                                        time: '',
-                                      ),
-                                      ScheduleItemWidget(
-                                        leadingIcon: _getIconForActivity(
-                                            currentRoutine['POPOŁUDNIE'],
-                                            Icons.park_rounded),
-                                        period: 'Popołudnie',
-                                        activity:
-                                            currentRoutine['POPOŁUDNIE'] ??
-                                                'Brak danych',
-                                        color: theme.primary,
-                                        time: '',
-                                      ),
-                                      ScheduleItemWidget(
-                                        leadingIcon: _getIconForActivity(
-                                            currentRoutine['WIECZÓR'],
-                                            Icons.dark_mode_rounded),
-                                        period: 'Wieczór',
-                                        activity: currentRoutine['WIECZÓR'] ??
-                                            'Brak danych',
-                                        color: theme.secondaryText,
-                                        time: '',
-                                      ),
-                                      ScheduleItemWidget(
-                                        leadingIcon: _getIconForActivity(
-                                            currentRoutine['NOC'],
-                                            Icons.bedtime_rounded),
-                                        period: 'Noc',
-                                        activity: currentRoutine['NOC'] ??
-                                            'Brak danych',
-                                        color: theme.primaryText,
-                                        time: '',
-                                      ),
-                                    ].divide(const SizedBox(height: 8.0)),
+                                  ScheduleItemWidget(
+                                    leadingIcon: _getIconForActivity(
+                                        currentRoutine['POŁUDNIE'],
+                                        Icons.restaurant_rounded),
+                                    period: 'Południe',
+                                    activity: currentRoutine['POŁUDNIE'] ??
+                                        'Brak danych',
+                                    color: theme.tertiary,
+                                    time: '',
                                   ),
-                                ].divide(const SizedBox(height: 16.0)),
+                                  ScheduleItemWidget(
+                                    leadingIcon: _getIconForActivity(
+                                        currentRoutine['POPOŁUDNIE'],
+                                        Icons.park_rounded),
+                                    period: 'Popołudnie',
+                                    activity: currentRoutine['POPOŁUDNIE'] ??
+                                        'Brak danych',
+                                    color: theme.primary,
+                                    time: '',
+                                  ),
+                                  ScheduleItemWidget(
+                                    leadingIcon: _getIconForActivity(
+                                        currentRoutine['WIECZÓR'],
+                                        Icons.dark_mode_rounded),
+                                    period: 'Wieczór',
+                                    activity: currentRoutine['WIECZÓR'] ??
+                                        'Brak danych',
+                                    color: theme.secondaryText,
+                                    time: '',
+                                  ),
+                                  ScheduleItemWidget(
+                                    leadingIcon: _getIconForActivity(
+                                        currentRoutine['NOC'],
+                                        Icons.bedtime_rounded),
+                                    period: 'Noc',
+                                    activity:
+                                        currentRoutine['NOC'] ?? 'Brak danych',
+                                    color: theme.primaryText,
+                                    time: '',
+                                  ),
+                                ].divide(const SizedBox(height: 8.0)),
                               ),
+                            ].divide(const SizedBox(height: 16.0)),
+                          ),
+                        ),
+                      ),
+
+                      // SEKCJA IDENTYFIKACJI POSTACI
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Zidentyfikuj postacie',
+                            style: theme.titleMedium.override(
+                              fontFamily: GoogleFonts.urbanist().fontFamily,
+                              color: theme.primaryText,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          Builder(
+                            builder: (context) {
+                              final playersList = GameState().activePlayers;
+                              final guesses = ProfileState().playerGuesses;
 
-                          // =========================================================================
-                          // POPRAWKA: Dynamiczne kafelki identyfikacji pobierane z GameState
-                          // =========================================================================
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                'Zidentyfikuj postacie',
-                                style: theme.titleMedium.override(
-                                  fontFamily: GoogleFonts.urbanist().fontFamily,
-                                  color: theme.primaryText,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  // Pobieramy bazę graczy oraz mapę typowań
-                                  final playersList = GameState().activePlayers;
-                                  final guesses = ProfileState().playerGuesses;
+                              final duplicateSet = guesses.values
+                                  .where((v) => v != null && v.isNotEmpty)
+                                  .fold<Map<String, int>>({}, (map, value) {
+                                    map[value] = (map[value] ?? 0) + 1;
+                                    return map;
+                                  })
+                                  .entries
+                                  .where((entry) => entry.value > 1)
+                                  .map((entry) => entry.key)
+                                  .toSet();
 
-                                  // Liczymy powtórzenia zawodów, ignorując puste pola i nulle
-                                  final duplicateSet = guesses.values
-                                      .where((v) => v != null && v.isNotEmpty)
-                                      .fold<Map<String, int>>({}, (map, value) {
-                                        map[value] = (map[value] ?? 0) + 1;
-                                        return map;
-                                      })
-                                      .entries
-                                      .where((entry) => entry.value > 1)
-                                      .map((entry) => entry.key)
-                                      .toSet();
+                              return Column(
+                                children:
+                                    playersList.asMap().entries.map((entry) {
+                                  final int index = entry.key;
+                                  final player = entry.value;
 
-                                  // Renderujemy wiersze dynamicznie
-                                  return Column(
-                                    children: playersList
-                                        .asMap()
-                                        .entries
-                                        .map((entry) {
-                                      final int index = entry.key;
-                                      final player = entry.value;
+                                  final playerSelection =
+                                      guesses[player.initials];
 
-                                      // Pobieramy aktualny wybór dla tego konkretnego gracza
-                                      final playerSelection =
-                                          guesses[player.initials];
+                                  final isDuplicate = playerSelection != null &&
+                                      playerSelection.isNotEmpty &&
+                                      duplicateSet.contains(playerSelection);
 
-                                      // POPRAWKA WALIDACJI: Wiersz świeci na czerwono TYLKO jeśli:
-                                      // 1. Gracz coś wybrał (wartość nie jest pusta ani nullem)
-                                      // 2. Ten wybór znajduje się w zbiorze duplikatów
-                                      final isDuplicate =
-                                          playerSelection != null &&
-                                              playerSelection.isNotEmpty &&
-                                              duplicateSet
-                                                  .contains(playerSelection);
+                                  final avatarColor = _playerColors[
+                                      index % _playerColors.length];
 
-                                      final avatarColor = _playerColors[
-                                          index % _playerColors.length];
-
-                                      return Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 16.0),
-                                        child: wrapWithModel(
-                                          model: index == 0
-                                              ? _model.guessRowModel1
-                                              : index == 1
-                                                  ? _model.guessRowModel2
-                                                  : index == 2
-                                                      ? _model.guessRowModel3
-                                                      : _model.guessRowModel4,
-                                          updateCallback: () =>
-                                              safeSetState(() {}),
-                                          child: GuessRowWidget(
-                                            color: avatarColor,
-                                            initials: player.initials,
-                                            profileName: player.initials,
-                                            duplicateProfession:
-                                                isDuplicate, // Bezpieczna, poprawiona flaga
-                                            onProfessionChanged: (_) =>
-                                                safeSetState(() {}),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 16.0),
+                                    child: wrapWithModel(
+                                      model: index == 0
+                                          ? _model.guessRowModel1
+                                          : index == 1
+                                              ? _model.guessRowModel2
+                                              : index == 2
+                                                  ? _model.guessRowModel3
+                                                  : _model.guessRowModel4,
+                                      updateCallback: () => safeSetState(() {}),
+                                      child: GuessRowWidget(
+                                        color: avatarColor,
+                                        initials: player.initials,
+                                        profileName: player.initials,
+                                        duplicateProfession: isDuplicate,
+                                        onProfessionChanged: (_) =>
+                                            safeSetState(() {}),
+                                      ),
+                                    ),
                                   );
-                                },
-                              )
-                            ].divide(const SizedBox(height: 24.0)),
+                                }).toList(),
+                              );
+                            },
                           ),
                         ].divide(const SizedBox(height: 24.0)),
                       ),
-                    ),
-                  ],
+                    ].divide(const SizedBox(height: 24.0)),
+                  ),
                 ),
               ),
             ),

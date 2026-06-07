@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+
 class PlayerInvestigationData {
   final String initials;
   final Map<String, String?> savedLocations;
@@ -30,6 +34,60 @@ class GameState {
   // Dynamiczna lista pozostałych graczy w pokoju (pobrana z API / WebSockets)
   List<PlayerInvestigationData> activePlayers = [];
 
+  // ==========================================
+  // SYSTEM GLOBALNEGO TIMERA
+  // ==========================================
+  int remainingSeconds = 300; // Domyślnie 5 minut
+  Timer? _gameTimer;
+
+  // Rejestr nasłuchiwania dla bezpiecznego odświeżania UI (safeSetState)
+  void Function()? onTimeChanged;
+
+  // Funkcja uruchamiająca odliczanie
+  void startTimer(BuildContext context) {
+    if (_gameTimer != null)
+      return; // Jeśli timer już działa, nie duplikujemy go
+
+    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (remainingSeconds > 0) {
+        remainingSeconds--;
+        onTimeChanged?.call(); // Powiadomienie widżetu o zmianie sekundy
+      } else {
+        stopTimer();
+        // POPRAWKA: Zegar osiąga 0 -> Automatyczne przerzucenie na ekran zadań
+        if (context.mounted) {
+          context.goNamed('CurrentTaskView');
+        }
+      }
+    });
+  }
+
+  // POPRAWKA: Wymuszony, czysty reset timera przy przejściu z zadań do śledztwa
+  void forceResetTimer() {
+    stopTimer();
+    remainingSeconds = 300; // Powrót do pełnych 5 minut
+    onTimeChanged?.call();
+  }
+
+  // Funkcja zatrzymująca odliczanie
+  void stopTimer() {
+    _gameTimer?.cancel();
+    _gameTimer = null;
+  }
+
+  // Formatowanie sekund do formatu MM:SS (np. "05:00")
+  String get formattedTime {
+    final int minutes = remainingSeconds ~/ 60;
+    final int seconds = remainingSeconds % 60;
+    final String minutesStr = minutes.toString().padLeft(2, '0');
+    final String secondsStr = seconds.toString().padLeft(2, '0');
+    return '$minutesStr:$secondsStr';
+  }
+
+  // ==========================================
+  // METODY LOGICZNE TOKU GRY
+  // ==========================================
+
   // Metoda do ustawiania danych z ekranu Lobby
   void joinRoom(String username, String roomCode) {
     currentUsername = username;
@@ -50,11 +108,16 @@ class GameState {
         ),
       );
     }
+    stopTimer();
+    remainingSeconds = 300;
   }
 
+  // Metoda do pełnego czyszczenia stanu tury i pokoju
   void resetNewGame() {
     currentUsername = '';
     currentRoomCode = '';
     activePlayers.clear();
+    stopTimer();
+    remainingSeconds = 300;
   }
 }

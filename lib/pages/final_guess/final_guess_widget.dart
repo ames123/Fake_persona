@@ -6,7 +6,7 @@ import '/pages/components/guess_row/guess_row_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/profile_state.dart';
-// POPRAWKA: Importujemy GameState, skąd pobierzemy listę graczy
+// POPRAWKA: Importujemy GameState, skąd pobierzemy listę graczy oraz timer
 import '/game_state.dart';
 import 'final_guess_model.dart';
 export 'final_guess_model.dart';
@@ -40,10 +40,19 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => FinalGuessModel());
+
+    // POPRAWKA: Podpinamy system powiadomień timera do odświeżania tego widoku co sekundę
+    GameState().onTimeChanged = () {
+      if (mounted) {
+        safeSetState(() {});
+      }
+    };
   }
 
   @override
   void dispose() {
+    // POPRAWKA: Bezpiecznie odpinamy timer przy opuszczaniu widoku
+    GameState().onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
@@ -129,7 +138,8 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                 size: 20.0,
                               ),
                               Text(
-                                '01:42',
+                                // POPRAWKA: Podmieniono statyczny tekst na dynamiczny czas z GameState
+                                GameState().formattedTime,
                                 style: theme.bodyMedium.override(
                                   font: GoogleFonts.urbanist(
                                     fontWeight: FontWeight.bold,

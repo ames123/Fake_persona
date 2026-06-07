@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 
-// POPRAWKA: Importujemy ProfileState z systemu konfiguracji profilu
+// POPRAWKA: Importujemy ProfileState oraz GameState
 import '/profile_state.dart';
+import '/game_state.dart';
 import '/pages/components/time_slot/time_slot_widget.dart';
 import '/pages/current_task_view/current_task_view_model.dart';
 
@@ -212,8 +213,7 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                               ),
                               task: routine['RANO'] ?? 'Basen',
                               timeLabel: 'Rano',
-                              editable: currentActivePeriod ==
-                                  'RANO', // Podświetlenie aktywnego rzędu
+                              editable: currentActivePeriod == 'RANO',
                             ),
                           ),
                           // SLOT 2: POŁUDNIE
@@ -333,7 +333,6 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            // Dynamicznie wyświetla aktualną porę dnia zapisaną w systemie
                             currentActivePeriod,
                             style: theme.displayLarge.copyWith(
                               color: const Color.fromARGB(255, 226, 33, 30),
@@ -343,7 +342,6 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            // Dynamiczny komunikat mówiący graczowi, co ma fizycznie zrobić na planszy
                             'Przesuń się na pole zgodnie ze swoim harmonogramem',
                             textAlign: TextAlign.center,
                             style: theme.bodyLarge.copyWith(
@@ -356,6 +354,10 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
+                                // POPRAWKA: Wymuszone zresetowanie timera rundy do 05:00
+                                GameState().forceResetTimer();
+
+                                // Przekierowanie na główny ekran śledztwa
                                 context.goNamed(
                                   PlayerInvestigationWidget.routeName,
                                   extra: {
