@@ -4,9 +4,10 @@ import '/index.dart';
 import '/pages/components/button/button_widget.dart';
 import '/pages/components/profile_tab/profile_tab_widget.dart';
 import '/pages/components/schedule_item/schedule_item_widget.dart';
-import '/pages/components/guess_row/guess_row_widget.dart'; // Dodany import
-// Poprawny import nowego pliku stanów profili
+import '/pages/components/guess_row/guess_row_widget.dart';
 import '/profile_state.dart';
+// POPRAWKA: Importujemy stan gry z listą aktywnych graczy
+import '/game_state.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'player_investigation_model.dart';
@@ -27,10 +28,8 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   late PlayerInvestigationModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Inicjalizacja bezpiecznej klasy stanów profili
   final ProfileState _profileState = ProfileState();
 
-  // Domyślny start ustawiony na pierwszą rolę z Twojej tabeli
   String _activeRoleName = 'Pisarz';
 
   final Map<String, String> _profileGenitives = {
@@ -70,6 +69,16 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
     'Czas wolny': Icons.accessibility_new_rounded,
   };
 
+  // Paleta kolorów awatarów dla dynamicznych wierszy
+  final List<Color> _playerColors = [
+    const Color(0xFF4B39EF),
+    const Color(0xFF39D2C0),
+    const Color(0xFF24D160),
+    const Color(0xFFF9CF58),
+    const Color(0xFFEE8B60),
+    const Color(0xFF1E88E5),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -93,13 +102,11 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
 
-    // Dynamiczne pobieranie harmonogramu z bazy ról dla aktywnego profilu
     final Map<String, String> currentRoutine =
         _profileState.staticRoutines[_activeRoleName] ?? {};
     final String genitiveName =
         _profileGenitives[_activeRoleName] ?? _activeRoleName.toLowerCase();
 
-    // Wyciągamy kompletną listę wszystkich 10 ról z bazy jako zakładki
     final List<String> availableRoles =
         _profileState.staticRoutines.keys.toList();
 
@@ -116,7 +123,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // NAGŁÓWEK (Oryginalny, zgrabny)
+            // NAGŁÓWEK
             Container(
               decoration: BoxDecoration(
                 color: theme.secondaryBackground,
@@ -187,7 +194,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
               ),
             ),
 
-            // SEKCJA GŁÓWNA (Dynamiczne zakładki ról, kalendarz i wybór postaci)
+            // SEKCJA GŁÓWNA
             Expanded(
               flex: 1,
               child: SingleChildScrollView(
@@ -214,7 +221,6 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              // DYNAMICZNE PRZEŁĄCZANIE PROFILI RÓL Z TABELI
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
@@ -228,7 +234,6 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         final bool isActive =
                                             _activeRoleName == role;
 
-                                        // Pobranie pierwszej litery nazwy roli jako dynamiczny inicjał
                                         final String initials = role.length >= 2
                                             ? role.substring(0, 2)
                                             : role.toUpperCase();
@@ -236,8 +241,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         return GestureDetector(
                                           onTap: () {
                                             setState(() {
-                                              _activeRoleName =
-                                                  role; // Zmiana roli na klikniętą
+                                              _activeRoleName = role;
                                             });
                                           },
                                           child: wrapWithModel(
@@ -268,7 +272,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                             ].divide(const SizedBox(height: 16.0)),
                           ),
 
-                          // KAFELEK HARMONOGRAMU: Dane 1:1 z tabeli ról
+                          // KAFELEK HARMONOGRAMU
                           Container(
                             decoration: BoxDecoration(
                               color: theme.secondaryBackground,
@@ -388,7 +392,9 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                             ),
                           ),
 
-                          // NOWA SEKCJA: Kopiowana 1:1 z final_guess pod harmonogramem
+                          // =========================================================================
+                          // POPRAWKA: Dynamiczne kafelki identyfikacji pobierane z GameState
+                          // =========================================================================
                           Column(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -404,12 +410,13 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                               ),
                               Builder(
                                 builder: (context) {
-                                  // Wyciągamy aktualną mapę zapisanych odpowiedzi z ProfileState
+                                  // Pobieramy bazę graczy oraz mapę typowań
+                                  final playersList = GameState().activePlayers;
                                   final guesses = ProfileState().playerGuesses;
 
-                                  // Liczymy powtórzenia zawodów, aby wykryć błędy i podświetlić na czerwono
+                                  // Liczymy powtórzenia zawodów, ignorując puste pola i nulle
                                   final duplicateSet = guesses.values
-                                      .where((v) => v.isNotEmpty)
+                                      .where((v) => v != null && v.isNotEmpty)
                                       .fold<Map<String, int>>({}, (map, value) {
                                         map[value] = (map[value] ?? 0) + 1;
                                         return map;
@@ -419,69 +426,59 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                       .map((entry) => entry.key)
                                       .toSet();
 
+                                  // Renderujemy wiersze dynamicznie
                                   return Column(
-                                    children: [
-                                      wrapWithModel(
-                                        model: _model.guessRowModel1,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: GuessRowWidget(
-                                          color: theme.primary,
-                                          initials: 'AR',
-                                          profileName: 'Alex Rivera',
-                                          duplicateProfession: duplicateSet
-                                              .contains(guesses['Alex Rivera']),
-                                          onProfessionChanged: (_) =>
+                                    children: playersList
+                                        .asMap()
+                                        .entries
+                                        .map((entry) {
+                                      final int index = entry.key;
+                                      final player = entry.value;
+
+                                      // Pobieramy aktualny wybór dla tego konkretnego gracza
+                                      final playerSelection =
+                                          guesses[player.initials];
+
+                                      // POPRAWKA WALIDACJI: Wiersz świeci na czerwono TYLKO jeśli:
+                                      // 1. Gracz coś wybrał (wartość nie jest pusta ani nullem)
+                                      // 2. Ten wybór znajduje się w zbiorze duplikatów
+                                      final isDuplicate =
+                                          playerSelection != null &&
+                                              playerSelection.isNotEmpty &&
+                                              duplicateSet
+                                                  .contains(playerSelection);
+
+                                      final avatarColor = _playerColors[
+                                          index % _playerColors.length];
+
+                                      return Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 16.0),
+                                        child: wrapWithModel(
+                                          model: index == 0
+                                              ? _model.guessRowModel1
+                                              : index == 1
+                                                  ? _model.guessRowModel2
+                                                  : index == 2
+                                                      ? _model.guessRowModel3
+                                                      : _model.guessRowModel4,
+                                          updateCallback: () =>
                                               safeSetState(() {}),
+                                          child: GuessRowWidget(
+                                            color: avatarColor,
+                                            initials: player.initials,
+                                            profileName: player.initials,
+                                            duplicateProfession:
+                                                isDuplicate, // Bezpieczna, poprawiona flaga
+                                            onProfessionChanged: (_) =>
+                                                safeSetState(() {}),
+                                          ),
                                         ),
-                                      ),
-                                      wrapWithModel(
-                                        model: _model.guessRowModel2,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: GuessRowWidget(
-                                          color: theme.tertiary,
-                                          initials: 'JS',
-                                          profileName: 'Jordan Smith',
-                                          duplicateProfession:
-                                              duplicateSet.contains(
-                                                  guesses['Jordan Smith']),
-                                          onProfessionChanged: (_) =>
-                                              safeSetState(() {}),
-                                        ),
-                                      ),
-                                      wrapWithModel(
-                                        model: _model.guessRowModel3,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: GuessRowWidget(
-                                          color: theme.success,
-                                          initials: 'CV',
-                                          profileName: 'Casey V.',
-                                          duplicateProfession: duplicateSet
-                                              .contains(guesses['Casey V.']),
-                                          onProfessionChanged: (_) =>
-                                              safeSetState(() {}),
-                                        ),
-                                      ),
-                                      wrapWithModel(
-                                        model: _model.guessRowModel4,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: GuessRowWidget(
-                                          color: theme.warning,
-                                          initials: 'TP',
-                                          profileName: 'Taylor P.',
-                                          duplicateProfession: duplicateSet
-                                              .contains(guesses['Taylor P.']),
-                                          onProfessionChanged: (_) =>
-                                              safeSetState(() {}),
-                                        ),
-                                      ),
-                                    ].divide(const SizedBox(height: 16.0)),
+                                      );
+                                    }).toList(),
                                   );
                                 },
-                              ),
+                              )
                             ].divide(const SizedBox(height: 24.0)),
                           ),
                         ].divide(const SizedBox(height: 24.0)),
@@ -492,7 +489,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
               ),
             ),
 
-            // DOLNY PASEK NAWIGACJI (Oryginalny, zgrabny)
+            // DOLNY PASEK NAWIGACJI
             Container(
               decoration: BoxDecoration(
                 color: theme.secondaryBackground,

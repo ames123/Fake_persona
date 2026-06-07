@@ -6,6 +6,8 @@ import '/pages/components/guess_row/guess_row_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/profile_state.dart';
+// POPRAWKA: Importujemy GameState, skąd pobierzemy listę graczy
+import '/game_state.dart';
 import 'final_guess_model.dart';
 export 'final_guess_model.dart';
 
@@ -23,6 +25,16 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
   late FinalGuessModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Lista kolorów dla awatarów graczy (wykorzystywana rotacyjnie)
+  final List<Color> _playerColors = [
+    const Color(0xFF4B39EF), // Primary
+    const Color(0xFF39D2C0), // Tertiary
+    const Color(0xFF24D160), // Success
+    const Color(0xFFF9CF58), // Warning
+    const Color(0xFFEE8B60), // Orange
+    const Color(0xFF1E88E5), // Blue
+  ];
 
   @override
   void initState() {
@@ -188,13 +200,20 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                     lineHeight: 1.3,
                                   ),
                                 ),
+                                // =========================================================================
+                                // POPRAWKA: W pełni dynamiczne generowanie wierszy z GameState().activePlayers
+                                // =========================================================================
                                 Builder(
                                   builder: (context) {
+                                    // Pobieramy bazę graczy oraz mapę typowań
+                                    final playersList =
+                                        GameState().activePlayers;
                                     final guesses =
                                         ProfileState().playerGuesses;
 
+                                    // Liczymy powtórzenia zawodów, ignorując puste pola i nulle
                                     final duplicateSet = guesses.values
-                                        .where((v) => v.isNotEmpty)
+                                        .where((v) => v != null && v.isNotEmpty)
                                         .fold<Map<String, int>>({},
                                             (map, value) {
                                           map[value] = (map[value] ?? 0) + 1;
@@ -205,70 +224,59 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                         .map((entry) => entry.key)
                                         .toSet();
 
+                                    // Renderujemy wiersze dynamicznie
                                     return Column(
-                                      children: [
-                                        wrapWithModel(
-                                          model: _model.guessRowModel1,
-                                          updateCallback: () =>
-                                              safeSetState(() {}),
-                                          child: GuessRowWidget(
-                                            color: theme.primary,
-                                            initials: 'AR',
-                                            profileName: 'Alex Rivera',
-                                            duplicateProfession:
-                                                duplicateSet.contains(
-                                                    guesses['Alex Rivera']),
-                                            onProfessionChanged: (_) =>
+                                      children: playersList
+                                          .asMap()
+                                          .entries
+                                          .map((entry) {
+                                        final int index = entry.key;
+                                        final player = entry.value;
+
+                                        // Pobieramy aktualny wybór dla tego konkretnego gracza
+                                        final playerSelection =
+                                            guesses[player.initials];
+
+                                        // POPRAWKA WALIDACJI: Wiersz świeci na czerwono TYLKO jeśli:
+                                        // 1. Gracz coś wybrał (wartość nie jest pusta ani nullem)
+                                        // 2. Ten wybór znajduje się w zbiorze duplikatów
+                                        final isDuplicate =
+                                            playerSelection != null &&
+                                                playerSelection.isNotEmpty &&
+                                                duplicateSet
+                                                    .contains(playerSelection);
+
+                                        final avatarColor = _playerColors[
+                                            index % _playerColors.length];
+
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 16.0),
+                                          child: wrapWithModel(
+                                            model: index == 0
+                                                ? _model.guessRowModel1
+                                                : index == 1
+                                                    ? _model.guessRowModel2
+                                                    : index == 2
+                                                        ? _model.guessRowModel3
+                                                        : _model.guessRowModel4,
+                                            updateCallback: () =>
                                                 safeSetState(() {}),
+                                            child: GuessRowWidget(
+                                              color: avatarColor,
+                                              initials: player.initials,
+                                              profileName: player.initials,
+                                              duplicateProfession:
+                                                  isDuplicate, // Bezpieczna, poprawiona flaga
+                                              onProfessionChanged: (_) =>
+                                                  safeSetState(() {}),
+                                            ),
                                           ),
-                                        ),
-                                        wrapWithModel(
-                                          model: _model.guessRowModel2,
-                                          updateCallback: () =>
-                                              safeSetState(() {}),
-                                          child: GuessRowWidget(
-                                            color: theme.tertiary,
-                                            initials: 'JS',
-                                            profileName: 'Jordan Smith',
-                                            duplicateProfession:
-                                                duplicateSet.contains(
-                                                    guesses['Jordan Smith']),
-                                            onProfessionChanged: (_) =>
-                                                safeSetState(() {}),
-                                          ),
-                                        ),
-                                        wrapWithModel(
-                                          model: _model.guessRowModel3,
-                                          updateCallback: () =>
-                                              safeSetState(() {}),
-                                          child: GuessRowWidget(
-                                            color: theme.success,
-                                            initials: 'CV',
-                                            profileName: 'Casey V.',
-                                            duplicateProfession: duplicateSet
-                                                .contains(guesses['Casey V.']),
-                                            onProfessionChanged: (_) =>
-                                                safeSetState(() {}),
-                                          ),
-                                        ),
-                                        wrapWithModel(
-                                          model: _model.guessRowModel4,
-                                          updateCallback: () =>
-                                              safeSetState(() {}),
-                                          child: GuessRowWidget(
-                                            color: theme.warning,
-                                            initials: 'TP',
-                                            profileName: 'Taylor P.',
-                                            duplicateProfession: duplicateSet
-                                                .contains(guesses['Taylor P.']),
-                                            onProfessionChanged: (_) =>
-                                                safeSetState(() {}),
-                                          ),
-                                        ),
-                                      ].divide(const SizedBox(height: 16.0)),
+                                        );
+                                      }).toList(),
                                     );
                                   },
-                                ),
+                                )
                               ].divide(const SizedBox(height: 24.0)),
                             ),
                           ),
@@ -348,8 +356,7 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                 final finalAnswers =
                                     ProfileState().playerGuesses;
                                 print(
-                                    'Wysyłanie ostatecznych typowań: $finalAnswers');
-                                // Miejsce na akcję sieciową Twojego backendowca
+                                    'Wysyłanie ostatecznych typowań z bazy: $finalAnswers');
                               },
                               child: const ButtonWidget(
                                 content: 'WYŚLIJ',
