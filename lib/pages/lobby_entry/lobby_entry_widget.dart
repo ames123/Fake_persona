@@ -5,7 +5,6 @@ import '/pages/components/button/button_widget.dart';
 import '/pages/components/text_field/text_field_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// POPRAWKA: Upewnij się, że ta ścieżka prowadzi do Twojego pliku Game State
 import '/game_state.dart';
 import 'lobby_entry_model.dart';
 export 'lobby_entry_model.dart';
@@ -24,6 +23,10 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
   late LobbyEntryModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // POPRAWKA: Lokalne zmienne przechowujące stan błędów walidacji
+  bool aliasHasError = false;
+  bool roomCodeHasError = false;
 
   @override
   void initState() {
@@ -151,7 +154,9 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                   borderRadius: BorderRadius.circular(24.0),
                   shape: BoxShape.rectangle,
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: aliasHasError
+                        ? FlutterFlowTheme.of(context).error
+                        : FlutterFlowTheme.of(context).alternate,
                     width: 1.0,
                   ),
                 ),
@@ -160,22 +165,23 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                   child: wrapWithModel(
                     model: _model.aliasTextFieldModel,
                     updateCallback: () => safeSetState(() {}),
-                    child: const TextFieldWidget(
+                    child: TextFieldWidget(
                       label: 'Nazwa gracza',
                       labelPresent: true,
-                      helper: 'Musi być taka sama jak na pionku',
+                      helper: aliasHasError
+                          ? 'Nazwa gracza nie może być pusta!'
+                          : 'Musi być taka sama jak na pionku',
                       helperPresent: true,
                       hint: 'e.g. Shadow',
                       value: '',
                       onChange: '',
                       onSubmit: '',
-                      leadingIcon: Icon(
-                        Icons.fingerprint_rounded,
-                      ),
+                      leadingIcon: const Icon(Icons.fingerprint_rounded),
                       leadingIconPresent: true,
                       trailingIconPresent: false,
                       variant: 'outlined',
-                      error: false,
+                      error:
+                          aliasHasError, // POPRAWKA: Dynamiczne świecenie na czerwono
                     ),
                   ),
                 ),
@@ -199,29 +205,34 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                           size: 32.0,
                         ),
                         iconColor: FlutterFlowTheme.of(context).onPrimary,
-
-                        // POPRAWKA: Przekazujemy czystą funkcję, karta wykona ją idealnie po kliknięciu
                         onTap: () {
-                          final username = (_model.aliasTextFieldModel.text !=
-                                      null &&
-                                  _model.aliasTextFieldModel.text!.isNotEmpty)
-                              ? _model.aliasTextFieldModel.text!
-                              : 'Gracz';
+                          // POPRAWKA: Walidacja dla tworzenia pokoju (wymagany tylko Nick)
+                          final inputName =
+                              _model.aliasTextFieldModel.text?.trim() ?? '';
+
+                          if (inputName.isEmpty) {
+                            safeSetState(() {
+                              aliasHasError = true;
+                            });
+                            return; // Przerywamy funkcję, nie przechodzimy dalej!
+                          }
+
+                          // Reset błędu, jeśli tekst się pojawił
+                          safeSetState(() {
+                            aliasHasError = false;
+                          });
+
                           const roomCode = 'NEWROOM';
+                          GameState().joinRoom(inputName, roomCode);
 
-                          // Zapisujemy dane do centralnego stanu gry
-                          GameState().joinRoom(username, roomCode);
-
-                          // Przechodzimy do poczekalni
                           context.pushNamed(
                             'RoomWaitingArea',
                             queryParameters: {
                               'roomCode': roomCode,
-                              'username': username,
+                              'username': inputName,
                             }.withoutNulls,
                           );
                         },
-
                         shadowColor: FlutterFlowTheme.of(context).primary25,
                         subtitle: 'Zacznij nowe śledzctwo',
                         title: 'Stwórz pokój',
@@ -236,7 +247,9 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                   borderRadius: BorderRadius.circular(24.0),
                   shape: BoxShape.rectangle,
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: roomCodeHasError
+                        ? FlutterFlowTheme.of(context).error
+                        : FlutterFlowTheme.of(context).alternate,
                     width: 1.0,
                   ),
                 ),
@@ -284,22 +297,23 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                             wrapWithModel(
                               model: _model.textFieldModel,
                               updateCallback: () => safeSetState(() {}),
-                              child: const TextFieldWidget(
+                              child: TextFieldWidget(
                                 label: 'Kod pokoju',
                                 labelPresent: true,
-                                helper: '',
-                                helperPresent: false,
+                                helper: roomCodeHasError
+                                    ? 'Kod pokoju nie może być pusty!'
+                                    : '',
+                                helperPresent: roomCodeHasError,
                                 hint: ' e.g. XJ92',
                                 value: '',
                                 onChange: '',
                                 onSubmit: '',
-                                leadingIcon: Icon(
-                                  Icons.vpn_key_rounded,
-                                ),
+                                leadingIcon: const Icon(Icons.vpn_key_rounded),
                                 leadingIconPresent: true,
                                 trailingIconPresent: false,
                                 variant: 'outlined',
-                                error: false,
+                                error:
+                                    roomCodeHasError, // POPRAWKA: Dynamiczne świecenie kodu na czerwono
                               ),
                             ),
                             Padding(
@@ -307,28 +321,30 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                               child: GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () {
-                                  final roomCode =
-                                      (_model.textFieldModel.text != null &&
-                                              _model.textFieldModel.text!
-                                                  .isNotEmpty)
-                                          ? _model.textFieldModel.text!
-                                          : 'XJ92BA';
-                                  final username =
-                                      (_model.aliasTextFieldModel.text !=
-                                                  null &&
-                                              _model.aliasTextFieldModel.text!
-                                                  .isNotEmpty)
-                                          ? _model.aliasTextFieldModel.text!
-                                          : 'Anonim';
+                                  // POPRAWKA: Pełna walidacja dla dołączania (wymagany Nick ORAZ Kod)
+                                  final inputName =
+                                      _model.aliasTextFieldModel.text?.trim() ??
+                                          '';
+                                  final inputRoom =
+                                      _model.textFieldModel.text?.trim() ?? '';
 
-                                  // Zapis do GameState
-                                  GameState().joinRoom(username, roomCode);
+                                  safeSetState(() {
+                                    aliasHasError = inputName.isEmpty;
+                                    roomCodeHasError = inputRoom.isEmpty;
+                                  });
+
+                                  // Jeśli którykolwiek jest pusty – blokujemy przejście
+                                  if (inputName.isEmpty || inputRoom.isEmpty) {
+                                    return;
+                                  }
+
+                                  GameState().joinRoom(inputName, inputRoom);
 
                                   context.pushNamed(
                                     'RoomWaitingArea',
                                     queryParameters: {
-                                      'roomCode': roomCode,
-                                      'username': username,
+                                      'roomCode': inputRoom,
+                                      'username': inputName,
                                     }.withoutNulls,
                                   );
                                 },
