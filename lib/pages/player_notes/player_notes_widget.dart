@@ -1,8 +1,8 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/index.dart';
 import '/pages/components/button/button_widget.dart';
 import '/pages/components/player_note_card/player_note_card_widget.dart';
-import '/index.dart';
 import '/game_state.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -44,10 +44,18 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
     if (_gameState.activePlayers.isEmpty) {
       _gameState.startNewGame(['KS', 'JS', 'AZ']);
     }
+
+    // Podpinamy system powiadomień timera do odświeżania tego widoku co sekundę
+    _gameState.onTimeChanged = () {
+      if (mounted) {
+        safeSetState(() {});
+      }
+    };
   }
 
   @override
   void dispose() {
+    _gameState.onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
@@ -73,36 +81,49 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Nagłówek (Bez zmian)
+            // Nagłówek (Timer przeniesiony na lewą stronę, pod tytuł sekcji)
             Container(
               decoration: BoxDecoration(color: theme.secondaryBackground),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment:
+                      MainAxisAlignment.start, // Wyrównanie do lewej strony
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text('Notatki śledztwa',
-                        style: theme.headlineSmall
-                            .copyWith(fontWeight: FontWeight.w800)),
-                    Container(
-                      decoration: BoxDecoration(
-                          color: theme.error15,
-                          borderRadius: BorderRadius.circular(9999.0)),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
-                        child: Row(
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment
+                          .start, // Układanie elementów od lewej krawędzi
+                      children: [
+                        Text(
+                          'Notatki śledztwa',
+                          style: theme.headlineSmall
+                              .copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 4.0),
+                        // POPRAWKA: Przeniesiony i wyrównany do lewej strony licznik czasu
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.timer_rounded,
-                                color: theme.onError, size: 16.0),
+                            Icon(
+                              Icons.timer_rounded,
+                              color: theme.error,
+                              size: 16.0,
+                            ),
                             const SizedBox(width: 4.0),
-                            Text('04:22',
-                                style: theme.labelLarge.copyWith(
-                                    color: theme.onError,
-                                    fontWeight: FontWeight.bold)),
+                            Text(
+                              _gameState.formattedTime,
+                              style: theme.labelLarge.copyWith(
+                                color: theme.error,
+                                fontFamily:
+                                    GoogleFonts.spaceGrotesk().fontFamily,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -115,47 +136,43 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
               color: theme.secondaryBackground,
               child: Column(
                 children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        children: _gameState.activePlayers
-                            .asMap()
-                            .entries
-                            .map((entry) {
-                              final int index = entry.key;
-                              final PlayerInvestigationData player =
-                                  entry.value;
-                              final bool isActive = _activePlayerIndex == index;
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: _gameState.activePlayers
+                          .asMap()
+                          .entries
+                          .map((entry) {
+                            final int index = entry.key;
+                            final PlayerInvestigationData player = entry.value;
+                            final bool isActive = _activePlayerIndex == index;
 
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _activePlayerIndex =
-                                        index; // Zmiana podglądanego gracza
-                                  });
-                                },
-                                child: CircleAvatar(
-                                  radius: 24,
-                                  backgroundColor: isActive
-                                      ? theme.primary
-                                      : theme.alternate,
-                                  child: Text(
-                                    player.initials,
-                                    style: TextStyle(
-                                      color: isActive
-                                          ? Colors.white
-                                          : theme.primaryText,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _activePlayerIndex =
+                                      index; // Zmiana podglądanego gracza
+                                });
+                              },
+                              child: CircleAvatar(
+                                radius: 24,
+                                backgroundColor:
+                                    isActive ? theme.primary : theme.alternate,
+                                child: Text(
+                                  player.initials,
+                                  style: TextStyle(
+                                    color: isActive
+                                        ? Colors.white
+                                        : theme.primaryText,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              );
-                            })
-                            .toList()
-                            .divide(const SizedBox(width: 12.0)),
-                      ),
+                              ),
+                            );
+                          })
+                          .toList()
+                          .divide(const SizedBox(width: 12.0)),
                     ),
                   ),
                   Container(height: 1.0, color: theme.alternate),
@@ -202,89 +219,86 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
                 color: theme.secondaryBackground,
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0, vertical: 16.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // PRZYCISK 1: Profile
-                    Expanded(
-                      flex: 1,
-                      child: GestureDetector(
-                        onTap: () => context.goNamed(
-                          PlayerInvestigationWidget.routeName,
-                          extra: {
-                            kTransitionInfoKey: const TransitionInfo(
-                              hasTransition: true,
-                              transitionType: PageTransitionType.rightToLeft,
-                              duration: Duration(milliseconds: 300),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0, vertical: 16.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // PRZYCISK 1: Profile
+                      Expanded(
+                        flex: 1,
+                        child: GestureDetector(
+                          onTap: () => context.goNamed(
+                            PlayerInvestigationWidget.routeName,
+                            extra: {
+                              kTransitionInfoKey: const TransitionInfo(
+                                hasTransition: true,
+                                transitionType: PageTransitionType.rightToLeft,
+                                duration: Duration(milliseconds: 300),
+                              ),
+                            },
+                          ),
+                          child: wrapWithModel(
+                            model: _model.buttonModel1,
+                            updateCallback: () => safeSetState(() {}),
+                            child: ButtonWidget(
+                              content: 'Profile',
+                              icon: Icon(
+                                Icons.person_rounded,
+                                color: theme.primaryText,
+                                size: 16.0,
+                              ),
+                              iconPresent: true,
+                              iconEndPresent: false,
+                              variant: 'outline',
+                              size: 'medium',
+                              fullWidth: true,
+                              loading: false,
+                              disabled: false,
                             ),
-                          },
-                        ),
-                        child: wrapWithModel(
-                          model: _model.buttonModel1,
-                          updateCallback: () => safeSetState(() {}),
-                          child: ButtonWidget(
-                            content: 'Profile',
-                            icon: Icon(
-                              Icons.person_rounded,
-                              color: theme.primaryText,
-                              size: 16.0,
-                            ),
-                            iconPresent: true,
-                            iconEndPresent: false,
-                            variant: 'outline',
-                            size:
-                                'medium', // Przywrócenie średniego rozmiaru zapobiega "pogrubieniu"
-                            fullWidth: true,
-                            loading: false,
-                            disabled: false,
                           ),
                         ),
                       ),
-                    ),
 
-                    // PRZYCISK 2: Mój kalendarz
-                    Expanded(
-                      flex: 1,
-                      child: GestureDetector(
-                        onTap: () => context.goNamed(
-                          ScheduleOrganizerWidget.routeName,
-                          extra: {
-                            kTransitionInfoKey: const TransitionInfo(
-                              hasTransition: true,
-                              transitionType: PageTransitionType.rightToLeft,
-                              duration: Duration(milliseconds: 300),
+                      // PRZYCISK 2: Mój kalendarz
+                      Expanded(
+                        flex: 1,
+                        child: GestureDetector(
+                          onTap: () => context.goNamed(
+                            ScheduleOrganizerWidget.routeName,
+                            extra: {
+                              kTransitionInfoKey: const TransitionInfo(
+                                hasTransition: true,
+                                transitionType: PageTransitionType.rightToLeft,
+                                duration: Duration(milliseconds: 300),
+                              ),
+                            },
+                          ),
+                          child: wrapWithModel(
+                            model: _model.buttonModel2,
+                            updateCallback: () => safeSetState(() {}),
+                            child: ButtonWidget(
+                              content: 'Mój kalendarz',
+                              icon: Icon(
+                                Icons.event_note_rounded,
+                                color: theme.onPrimary,
+                                size: 16.0,
+                              ),
+                              iconPresent: true,
+                              iconEndPresent: false,
+                              variant: 'primary',
+                              size: 'medium',
+                              fullWidth: true,
+                              loading: false,
+                              disabled: false,
                             ),
-                          },
-                        ),
-                        child: wrapWithModel(
-                          model: _model.buttonModel2,
-                          updateCallback: () => safeSetState(() {}),
-                          child: ButtonWidget(
-                            content: 'Mój kalendarz',
-                            icon: Icon(
-                              Icons.event_note_rounded,
-                              color: theme.onPrimary,
-                              size: 16.0,
-                            ),
-                            iconPresent: true,
-                            iconEndPresent: false,
-                            variant: 'primary',
-                            size:
-                                'medium', // Przywrócenie średniego rozmiaru zapobiega "pogrubieniu"
-                            fullWidth: true,
-                            loading: false,
-                            disabled: false,
                           ),
                         ),
                       ),
-                    ),
-                  ].divide(const SizedBox(width: 16.0)),
-                ),
-              ),
+                    ],
+                  )),
             ),
           ],
         ),

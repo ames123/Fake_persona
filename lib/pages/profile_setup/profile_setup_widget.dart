@@ -7,8 +7,8 @@ import '/pages/components/button/button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'profile_setup_model.dart';
-// POPRAWKA: Importujemy nasz nowy, inteligentny ProfileState
 import '/profile_state.dart';
+import 'dart:math' as math;
 export 'profile_setup_model.dart';
 
 class ProfileSetupWidget extends StatefulWidget {
@@ -25,7 +25,6 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
   late ProfileSetupModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Stałe, niezmienne pory dnia przypisane do pozycji (od góry do dołu)
   final List<String> _timeLabels = [
     'Rano',
     'Południe',
@@ -34,22 +33,130 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
     'Noc',
   ];
 
-  // POPRAWKA: Lista zadań staje się pusta na start i ładuje się dynamicznie
   List<SlotData> _slots = [];
+  List<String> _cachedAlternativeTasks = [];
+
+  // Rejestr ikon identyczny jak w pozostałych widokach gry
+  final Map<String, IconData> _activityIcons = {
+    'Gotowanie': Icons.soup_kitchen_rounded,
+    'Szukanie zapasów': Icons.search_rounded,
+    'Jedzenie': Icons.restaurant_rounded,
+    'Granie na PC': Icons.computer_rounded,
+    'Próba roli': Icons.theater_comedy_rounded,
+    'Oglądanie': Icons.tv_rounded,
+    'Pisanie książki': Icons.menu_book_rounded,
+    'Eksperyment': Icons.science_rounded,
+    'Czytanie': Icons.auto_stories_rounded,
+    'Pielęgnacja roślin': Icons.yard_rounded,
+    'Trening': Icons.fitness_center_rounded,
+    'Sport': Icons.sports_volleyball_rounded,
+    'Badanie lekarskie': Icons.medical_services_rounded,
+    'Słuchanie muzyki': Icons.headphones_rounded,
+    'Przebieranie się': Icons.checkroom_rounded,
+    'Kradzież': Icons.gavel_rounded,
+    'Mycie': Icons.clean_hands_rounded,
+    'Ścieranie kurzu': Icons.cleaning_services_rounded,
+    'Dezynfekcja': Icons.vaccines_rounded,
+    'Odpoczynek': Icons.hotel_rounded,
+    'Czas wolny': Icons.accessibility_new_rounded,
+  };
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileSetupModel());
-
-    // POPRAWKA: Przy wejściu na ekran losujemy profil i wczytujemy jego harmonogram
     _slots = ProfileState().rollNewProfile();
+    _prepareAlternativeTasks();
   }
 
-  @override
-  void dispose() {
-    _model.dispose();
-    super.dispose();
+  // Losowanie 3 unikalnych alternatyw na starcie ekranu
+  void _prepareAlternativeTasks() {
+    final state = ProfileState();
+    final allAvailable = state.staticRoutines.values
+        .expand((routine) => routine.values)
+        .toSet()
+        .toList();
+
+    final currentTasks = _slots.map((s) => s.task).toSet();
+
+    final filteredPool = allAvailable
+        .where((task) => !currentTasks.contains(task) && task != 'Czas wolny')
+        .toList();
+
+    filteredPool.shuffle();
+    _cachedAlternativeTasks = filteredPool.take(3).toList();
+  }
+
+  // POPRAWKA: Pobieranie ikony bezpośrednio z bazy ikon gry
+  IconData _getIconForTaskName(String taskName) {
+    return _activityIcons[taskName] ?? Icons.help_outline_rounded;
+  }
+
+  // Ekran wyboru z wcześniej wylosowanymi 3 aktywnościami i właściwymi ikonami
+  void _showChoiceDialog(int slotIndex) {
+    final theme = FlutterFlowTheme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: theme.secondaryBackground,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
+          title: Text(
+            'Wybierz nową aktywność',
+            textAlign: TextAlign.center,
+            style: theme.titleMedium.copyWith(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _cachedAlternativeTasks.map((taskName) {
+              // Pobranie dynamicznej, poprawnej ikony
+              final taskIcon = _getIconForTaskName(taskName);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _slots[slotIndex] = SlotData(
+                        id: _slots[slotIndex].id,
+                        icon: taskIcon,
+                        iconColor: Colors.blue,
+                        task: taskName,
+                      );
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: theme.alternate),
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(taskIcon,
+                            color: const Color(0xFF1E88E5), size: 24.0),
+                        const SizedBox(width: 16.0),
+                        Text(
+                          taskName,
+                          style: theme.bodyLarge
+                              .copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
   }
 
   void _updateOrder(int oldIndex, int newIndex) {
@@ -65,8 +172,10 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    // Pobieramy aktualną rolę, aby wyświetlić ją na gradiencie
     final currentRoleName = ProfileState().currentRole;
+
+    final bool hasFreeTimeLeft =
+        _slots.any((slot) => slot.task == 'Czas wolny');
 
     return GestureDetector(
       onTap: () {
@@ -118,7 +227,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                   ),
                   const SizedBox(height: 16.0),
 
-                  // --- Wizytówka Profilu (Gradient) ---
+                  // --- Wizytówka Profilu ---
                   Container(
                     decoration: BoxDecoration(
                       boxShadow: [
@@ -151,10 +260,9 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                             child: Align(
                               alignment: const AlignmentDirectional(0.0, 0.0),
                               child: Text(
-                                // Pobieramy pierwsze dwie litery dynamicznej roli jako Avatar
                                 currentRoleName
                                     .substring(
-                                        0, min(2, currentRoleName.length))
+                                        0, math.min(2, currentRoleName.length))
                                     .toUpperCase(),
                                 style: theme.labelMedium.override(
                                   font: GoogleFonts.spaceGrotesk(
@@ -179,7 +287,6 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                   ),
                                 ),
                                 Text(
-                                  // POPRAWKA: Dynamiczny tekst wylosowanej roli (np. Kucharz, Gamer...)
                                   currentRoleName,
                                   style: theme.titleLarge.override(
                                     font: GoogleFonts.urbanist(
@@ -217,10 +324,17 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                   ),
                                 ),
                                 Text(
-                                  'Przeciągaj bloki, aby zmienić kolejność zadań',
+                                  hasFreeTimeLeft
+                                      ? '⚠️ Musisz wybrać aktywność z listy dla "Czasu wolnego"'
+                                      : 'Zadania przypisane! Możesz teraz zmienić ich kolejność',
                                   style: theme.bodyMedium.override(
                                     font: GoogleFonts.urbanist(),
-                                    color: theme.secondaryText,
+                                    color: hasFreeTimeLeft
+                                        ? theme.error
+                                        : theme.success,
+                                    fontWeight: hasFreeTimeLeft
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ],
@@ -230,7 +344,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                       ),
                       const SizedBox(height: 16.0),
 
-                      // --- CAŁKOWICIE NIEZALEŻNA LISTA PRZECIĄGANA ---
+                      // --- LISTA PRZECIĄGANA ---
                       ReorderableListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -240,6 +354,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                         itemBuilder: (context, index) {
                           final item = _slots[index];
                           final currentPeriodLabel = _timeLabels[index];
+                          final bool isFreeTime = item.task == 'Czas wolny';
 
                           return Padding(
                             key: ValueKey(item.id),
@@ -251,8 +366,10 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                 color: theme.secondaryBackground,
                                 borderRadius: BorderRadius.circular(24.0),
                                 border: Border.all(
-                                  color: theme.alternate,
-                                  width: 1.0,
+                                  color: isFreeTime
+                                      ? theme.error.withValues(alpha: 0.5)
+                                      : theme.alternate,
+                                  width: isFreeTime ? 2.0 : 1.0,
                                 ),
                               ),
                               child: Row(
@@ -264,13 +381,17 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                       width: 56.0,
                                       height: 56.0,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFE3F2FD),
+                                        color: isFreeTime
+                                            ? const Color(0xFFFFEBEE)
+                                            : const Color(0xFFE3F2FD),
                                         borderRadius:
                                             BorderRadius.circular(16.0),
                                       ),
                                       child: Icon(
                                         item.icon,
-                                        color: const Color(0xFF1E88E5),
+                                        color: isFreeTime
+                                            ? theme.error
+                                            : const Color(0xFF1E88E5),
                                         size: 28.0,
                                       ),
                                     ),
@@ -282,25 +403,58 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                                       child: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .start, // Zmiana na lewo dla lepszego czytania par
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            currentPeriodLabel, // STAŁA PORA DNIA
+                                            currentPeriodLabel,
                                             style: theme.bodySmall.copyWith(
-                                              color: const Color(0xFF1E88E5),
+                                              color: isFreeTime
+                                                  ? theme.error
+                                                  : const Color(0xFF1E88E5),
                                               fontWeight: FontWeight.bold,
                                               fontSize: 13.0,
                                             ),
                                           ),
                                           const SizedBox(height: 4.0),
-                                          Text(
-                                            item.task, // DYNAMICZNE ZADANIE Z BAZY PROFILU
-                                            style: theme.bodyLarge.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: theme.primaryText,
-                                              fontSize: 18.0,
-                                            ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                item.task,
+                                                style: theme.bodyLarge.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isFreeTime
+                                                      ? theme.error
+                                                      : theme.primaryText,
+                                                  fontSize: 18.0,
+                                                ),
+                                              ),
+                                              if (isFreeTime) ...[
+                                                const SizedBox(width: 8.0),
+                                                GestureDetector(
+                                                  onTap: () =>
+                                                      _showChoiceDialog(index),
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            4.0),
+                                                    decoration: BoxDecoration(
+                                                      color: theme.error
+                                                          .withValues(
+                                                              alpha: 0.1),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons
+                                                          .edit_location_alt_rounded,
+                                                      color: theme.error,
+                                                      size: 18.0,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -334,22 +488,23 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: GestureDetector(
-                      onTap: () {
-                        // POPRAWKA: Zanim zmienimy ekran, trwale zapisujemy ułożony
-                        // przez gracza harmonogram czynności do ProfileState
-                        ProfileState().saveFinalRoutine(_slots);
+                      onTap: hasFreeTimeLeft
+                          ? null
+                          : () {
+                              ProfileState().saveFinalRoutine(_slots);
 
-                        context.goNamed(
-                          CurrentTaskViewWidget.routeName,
-                          extra: {
-                            kTransitionInfoKey: const TransitionInfo(
-                              hasTransition: true,
-                              transitionType: PageTransitionType.rightToLeft,
-                              duration: Duration(milliseconds: 300),
-                            ),
-                          },
-                        );
-                      },
+                              context.goNamed(
+                                CurrentTaskViewWidget.routeName,
+                                extra: {
+                                  kTransitionInfoKey: const TransitionInfo(
+                                    hasTransition: true,
+                                    transitionType:
+                                        PageTransitionType.rightToLeft,
+                                    duration: Duration(milliseconds: 300),
+                                  ),
+                                },
+                              );
+                            },
                       child: wrapWithModel(
                         model: _model.buttonModel,
                         updateCallback: () => safeSetState(() {}),
@@ -366,7 +521,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                           size: 'large',
                           fullWidth: true,
                           loading: false,
-                          disabled: false,
+                          disabled: hasFreeTimeLeft,
                         ),
                       ),
                     ),

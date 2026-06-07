@@ -4,18 +4,18 @@ import 'package:schedule_sleuth/services/action_service.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/index.dart';
 import '/pages/components/button/button_widget.dart';
 import '/pages/components/player_card/player_card_widget.dart';
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// POPRAWKA: Pamiętaj, aby ta ścieżka odpowiadała lokalizacji Twojego pliku z klasą GameState
 import '/game_state.dart';
 import 'room_waiting_area_model.dart';
 export 'room_waiting_area_model.dart';
 
 class RoomWaitingAreaWidget extends StatefulWidget {
-  // POPRAWKA: Wymagane parametry przekazywane z ekranu LobbyEntry
   final String roomCode;
   final String username;
 
@@ -36,6 +36,18 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
   late RoomWaitingAreaModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Pula losowych imion do wygenerowania testowych graczy
+  final List<String> _poolOfNicknames = [
+    'Alex Rivera',
+    'Jordan Smith',
+    'Casey V.',
+    'Taylor P.',
+    'Morgan Cole',
+    'Jamie Vance',
+    'Skyler Grey',
+    'Rowan Blair',
+  ];
 
   Timer? timer;
 
@@ -58,6 +70,49 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
     getGamestate();
     initTimer();
     _model = createModel(context, () => RoomWaitingAreaModel());
+
+    // POPRAWKA: Automatyczne symulowanie wejścia dwóch losowych osób do pokoju
+    _generateRandomPlayers();
+  }
+
+  void _generateRandomPlayers() {
+    final gameState = GameState();
+    final dayPeriods = ['RANO', 'POŁUDNIE', 'POPOŁUDNIE', 'WIECZÓR', 'NOC'];
+    final random = math.Random();
+
+    // Czyszczenie starej listy, aby przy przechodzeniu ekranów nie dublować graczy
+    gameState.activePlayers.clear();
+
+    // Klonujemy pulę imion, aby nie wylosować dwa razy tej samej osoby
+    List<String> temporaryPool = List.from(_poolOfNicknames);
+    // Usuwamy własny nick, jeśli znajduje się w puli
+    temporaryPool.remove(widget.username);
+
+    // Losujemy dokładnie 2 graczy
+    for (int i = 0; i < 2; i++) {
+      if (temporaryPool.isEmpty) break;
+
+      final randomIndex = random.nextInt(temporaryPool.length);
+      final chosenName = temporaryPool.removeAt(randomIndex);
+
+      // Pobieramy inicjały (np. "Alex Rivera" -> "AR")
+      final nameParts = chosenName.split(' ');
+      String initials = nameParts.first.substring(0, 1).toUpperCase();
+      if (nameParts.length > 1 && nameParts[1].isNotEmpty) {
+        initials += nameParts[1].substring(0, 1).toUpperCase();
+      } else {
+        initials += chosenName.substring(1, 2).toUpperCase();
+      }
+
+      // Dodajemy wylosowanego gracza do struktur GameState
+      gameState.activePlayers.add(
+        PlayerInvestigationData(
+          initials: initials, // To pole jest używane jako identyfikator w UI
+          locations: {for (var p in dayPeriods) p: null},
+          actions: {for (var p in dayPeriods) p: null},
+        ),
+      );
+    }
   }
 
   Future<void> getGamestate() async{
@@ -74,7 +129,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Pobieramy listę aktywnych graczy z Twojego stanu gry
+    // Pobieramy dynamiczną listę zasilaną w initState
     final activePlayers = GameState().activePlayers;
 
     return GestureDetector(
@@ -183,40 +238,37 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 32.0, 16.0, 32.0, 16.0),
                             child: Container(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    // POPRAWKA: Dynamiczny kod pokoju z parametrów widżetu
-                                    GameState().currentRoomCode.isNotEmpty
-                                        ? GameState().currentRoomCode
-                                        : 'pls wait',
-                                    style: FlutterFlowTheme.of(context)
-                                        .headlineLarge
-                                        .override(
-                                          font: GoogleFonts.urbanist(
-                                            fontWeight: FontWeight.w900,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineLarge
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .primary,
-                                          letterSpacing: 0.0,
+                                child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  GameState().currentRoomCode.isNotEmpty
+                                      ? GameState().currentRoomCode
+                                      : 'pls wait',
+                                  style: FlutterFlowTheme.of(context)
+                                      .headlineLarge
+                                      .override(
+                                        font: GoogleFonts.urbanist(
                                           fontWeight: FontWeight.w900,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
                                                   .headlineLarge
                                                   .fontStyle,
-                                          lineHeight: 1.2,
                                         ),
-                                  ),
-                                ].divide(const SizedBox(width: 16.0)),
-                              ),
-                            ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .primary,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w900,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .headlineLarge
+                                            .fontStyle,
+                                        lineHeight: 1.2,
+                                      ),
+                                ),
+                              ],
+                            )),
                           ),
                         ),
                       ],
@@ -290,8 +342,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                               16.0, 8.0, 16.0, 8.0),
                           child: Container(
                             child: Text(
-                              // Wyświetla łączną liczbę graczy (inni z API + Ty)
-                              '${activePlayers.where((p) => p.initials != widget.username).length + 1} / 6',
+                              '${activePlayers.length + 1} / 6', // Licznik uwzględnia wylosowanych graczy i Ciebie
                               style: FlutterFlowTheme.of(context)
                                   .labelLarge
                                   .override(
@@ -335,7 +386,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    // 1. TWOJA KARTA (Zawsze na samej górze)
+                                    // 1. TWOJA KARTA
                                     Padding(
                                       padding:
                                           const EdgeInsets.only(bottom: 16.0),
@@ -343,6 +394,11 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                         color: const Color(0xFF00FFC2),
                                         initials: widget.username.isNotEmpty
                                             ? widget.username
+                                                .substring(
+                                                    0,
+                                                    math.min(2,
+                                                        widget.username.length))
+                                                .toUpperCase()
                                             : 'JA',
                                         name: widget.username.isNotEmpty
                                             ? '${widget.username} (Ty)'
@@ -350,14 +406,9 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                       ),
                                     ),
 
-                                    // 2. DYNAMICZNA LISTA POZOSTAŁYCH GRACZY (Zabezpieczona przed nullami)
-                                    ...activePlayers
-                                        .where((player) =>
-                                            player.initials !=
-                                                widget.username &&
-                                            player.initials != null)
-                                        .map((player) {
-                                      final playerInitials = player.initials!;
+                                    // 2. DYNAMICZNIE RENDEROWANI WYLOSOWANI GRACZE
+                                    ...activePlayers.map((player) {
+                                      final playerInitials = player.initials;
                                       return Padding(
                                         padding:
                                             const EdgeInsets.only(bottom: 16.0),
@@ -368,7 +419,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                           name: playerInitials,
                                         ),
                                       );
-                                    }).toList(),
+                                    }),
 
                                     // 3. PLACEHOLDER OCZEKIWANIA
                                     Opacity(
@@ -404,7 +455,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                                   size: 24.0,
                                                 ),
                                                 Text(
-                                                  'Oczekiwanie na innych',
+                                                  'Oczekiwanie na innych...',
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
@@ -502,8 +553,8 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                       size: 'large',
                                       fullWidth: false,
                                       loading: false,
-                                      disabled: (activePlayers.length + 1) <
-                                          3, // Blokada, jeśli łączna liczba graczy < 3
+                                      // Warunek odblokowania: 2 wylosowanych + Ty = 3 (Przycisk staje się aktywny)
+                                      disabled: (activePlayers.length + 1) < 3,
                                     ),
                                   ),
                                 ),

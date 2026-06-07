@@ -1,8 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-// Zakładam, że SlotData jest zaimportowane lub zdefiniowane globalnie.
-// Jeśli masz je w pliku widżetu, profil stanu nie musi importować widżetu,
-// ale dla czystości kodu przenieśliśmy strukturę SlotData tutaj.
 
 class SlotData {
   final int id;
@@ -31,12 +28,15 @@ class ProfileState {
   // ZMIENNE STANU GRACZA (Zapisywane w locie)
   // ==========================================
   String currentRole = 'Nie wylosowano';
-
-  // Tutaj zapiszemy ostateczny, zmieniony przez gracza harmonogram
-  // Klucz: Pora dnia (RANO, POŁUDNIE...), Wartość: Czynność ułożona przez gracza
   Map<String, String> savedUserRoutine = {};
 
-  // Mapowanie czynności na ikony, aby widżet wiedział co narysować
+  // POPRAWKA: Globalny rejestr odpowiedzi gracza (Klucz: Nick gracza, Wartość: Wybrany zawód)
+  // Przechowywanie danych tutaj gwarantuje, że stan przetrwa zmianę ekranów i będzie identyczny w każdym widżecie.
+  final Map<String, String> playerGuesses = {};
+
+  // POPRAWKA: Dynamiczny getter zwracający wszystkie unikalne nazwy zawodów z tabeli do dropdowna
+  List<String> get allProfessionOptions => staticRoutines.keys.toList();
+
   final Map<String, IconData> _taskIcons = {
     'Czytanie': Icons.menu_book_rounded,
     'Czas wolny': Icons.groups_rounded,
@@ -61,7 +61,6 @@ class ProfileState {
     'Próba roli': Icons.theater_comedy_rounded,
   };
 
-  // SZTYWNA BAZA HARMONOGRAMÓW RÓL (ŚCIĄGAWKA)
   final Map<String, Map<String, String>> staticRoutines = const {
     'Pisarz': {
       'RANO': 'Czytanie',
@@ -135,16 +134,13 @@ class ProfileState {
     },
   };
 
-  // FUNKCJA: Losowanie nowej roli i generowanie dla niej domyślnych slotów
   List<SlotData> rollNewProfile() {
     final roles = staticRoutines.keys.toList();
     final randomRole = roles[Random().nextInt(roles.length)];
     currentRole = randomRole;
-
     return getDefaultSlotsForCurrentRole();
   }
 
-  // FUNKCJA: Pobieranie domyślnego zestawu zadań dla aktualnej roli
   List<SlotData> getDefaultSlotsForCurrentRole() {
     final routine = staticRoutines[currentRole];
     if (routine == null) return [];
@@ -152,7 +148,6 @@ class ProfileState {
     int idCounter = 1;
     List<SlotData> loadedSlots = [];
 
-    // Mapujemy sztywny harmonogram z tabeli na obiekty SlotData (w domyślnej kolejności)
     routine.forEach((period, taskName) {
       loadedSlots.add(
         SlotData(
@@ -167,14 +162,11 @@ class ProfileState {
     return loadedSlots;
   }
 
-  // FUNKCJA: Zapisywanie zmienionego przez gracza harmonogramu
   void saveFinalRoutine(List<SlotData> orderedSlots) {
     final periods = ['RANO', 'POŁUDNIE', 'POPOŁUDNIE', 'WIECZÓR', 'NOC'];
     savedUserRoutine.clear();
 
-    // Ponieważ pory dnia na ekranie są stałe (od góry do dołu), przypisujemy
-    // zadania w takiej kolejności, w jakiej ułożył je użytkownik w liście przeciąganej
-    for (int i = 0; i < orderedSlots.length; i++) {
+    for (var i = 0; i < orderedSlots.length; i++) {
       if (i < periods.length) {
         savedUserRoutine[periods[i]] = orderedSlots[i].task;
       }

@@ -208,7 +208,7 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                         onTap: () async {
                           // POPRAWKA: Walidacja dla tworzenia pokoju (wymagany tylko Nick)
                           final inputName =
-                              _model.aliasTextFieldModel.text?.trim() ?? '';
+                              _model.aliasTextFieldModel.text.trim() ?? '';
 
                           if (inputName.isEmpty) {
                             safeSetState(() {
@@ -323,10 +323,10 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                                 onTap: () {
                                   // POPRAWKA: Pełna walidacja dla dołączania (wymagany Nick ORAZ Kod)
                                   final inputName =
-                                      _model.aliasTextFieldModel.text?.trim() ??
+                                      _model.aliasTextFieldModel.text.trim() ??
                                           '';
                                   final inputRoom =
-                                      _model.textFieldModel.text?.trim() ?? '';
+                                      _model.textFieldModel.text.trim() ?? '';
 
                                   safeSetState(() {
                                     aliasHasError = inputName.isEmpty;
