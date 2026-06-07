@@ -326,11 +326,9 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                     // 2. DYNAMICZNA LISTA POZOSTAŁYCH GRACZY (Zabezpieczona przed nullami)
                                     ...activePlayers
                                         .where((player) =>
-                                            player.initials !=
-                                                widget.username &&
-                                            player.initials != null)
+                                            player.initials != widget.username)
                                         .map((player) {
-                                      final playerInitials = player.initials!;
+                                      final playerInitials = player.initials;
                                       return Padding(
                                         padding:
                                             const EdgeInsets.only(bottom: 16.0),
@@ -341,7 +339,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                           name: playerInitials,
                                         ),
                                       );
-                                    }).toList(),
+                                    }),
 
                                     // 3. PLACEHOLDER OCZEKIWANIA
                                     Opacity(

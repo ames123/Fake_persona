@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '/profile_state.dart'; // POPRAWKA: Import stanu
 import 'guess_row_model.dart';
 export 'guess_row_model.dart';
 
@@ -12,21 +13,19 @@ class GuessRowWidget extends StatefulWidget {
     super.key,
     Color? color,
     String? initials,
-    String? nicknames,
-    String? profileName,
+    String?
+        profileName, // To pole przekazuje unikalną nazwę gracza (np. Alex Rivera)
     String? scheduleHint,
     bool? duplicateProfession,
     this.onProfessionChanged,
   })  : color = color ?? const Color(0x00000000),
         initials = initials ?? 'JS',
-        nicknames = nicknames ?? 'Alex Rivera,Jordan Smith,Casey V.,Taylor P.',
-        profileName = profileName ?? 'Kucharz',
+        profileName = profileName ?? 'Alex Rivera',
         scheduleHint = scheduleHint ?? '',
         duplicateProfession = duplicateProfession ?? false;
 
   final Color color;
   final String initials;
-  final String nicknames;
   final String profileName;
   final String scheduleHint;
   final bool duplicateProfession;
@@ -49,28 +48,28 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => GuessRowModel());
+
+    // POPRAWKA: Wczytujemy zapisaną wcześniej odpowiedź dla tego gracza z ProfileState
+    _model.dropdownValue = ProfileState().playerGuesses[widget.profileName];
   }
 
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final professionOptions = widget.nicknames
-        .split(',')
-        .map((option) => option.trim())
-        .where((option) => option.isNotEmpty)
-        .toList();
-    final assignedProfession = _model.dropdownValue;
+    // POPRAWKA: Opcje dropdowna pobieramy dynamicznie jako listę profesji z ProfileState
+    final professionOptions = ProfileState().allProfessionOptions;
+    final assignedProfession =
+        ProfileState().playerGuesses[widget.profileName] ?? '';
 
     return Container(
       decoration: BoxDecoration(
         color: widget.duplicateProfession
-            ? FlutterFlowTheme.of(context).error.withOpacity(0.08)
+            ? FlutterFlowTheme.of(context).error.withValues(alpha: 0.08)
             : FlutterFlowTheme.of(context).secondaryBackground,
         borderRadius: BorderRadius.circular(9999.0),
         shape: BoxShape.rectangle,
@@ -126,62 +125,57 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                 ),
               ),
               Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      valueOrDefault<String>(
-                        widget.profileName,
-                        'Pisarz',
-                      ),
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.urbanist(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.profileName, // Nazwa gracza (np. Alex Rivera)
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.urbanist(
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontStyle,
+                              ),
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              letterSpacing: 0.0,
                               fontWeight: FontWeight.bold,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontStyle,
+                              lineHeight: 1.5,
                             ),
-                            color: FlutterFlowTheme.of(context).primaryText,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                            lineHeight: 1.5,
-                          ),
-                    ),
-                    Text(
-                      assignedProfession != null &&
-                              assignedProfession.isNotEmpty
-                          ? 'Zawód: $assignedProfession'
-                          : '',
-                      style: FlutterFlowTheme.of(context).labelSmall.override(
-                            font: GoogleFonts.spaceGrotesk(
-                              fontWeight: FlutterFlowTheme.of(context)
-                                  .labelSmall
-                                  .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .labelSmall
-                                  .fontStyle,
-                            ),
-                            color: assignedProfession != null &&
-                                    assignedProfession.isNotEmpty
-                                ? FlutterFlowTheme.of(context).primary
-                                : FlutterFlowTheme.of(context).secondaryText,
-                            letterSpacing: 0.0,
-                            fontWeight: FlutterFlowTheme.of(context)
-                                .labelSmall
-                                .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .labelSmall
-                                .fontStyle,
-                            lineHeight: 1.2,
-                          ),
-                    ),
-                  ].divide(const SizedBox(height: 4.0)),
+                      ),
+                      if (assignedProfession.isNotEmpty)
+                        Text(
+                          'Zawód: $assignedProfession',
+                          style:
+                              FlutterFlowTheme.of(context).labelSmall.override(
+                                    font: GoogleFonts.spaceGrotesk(
+                                      fontWeight: FlutterFlowTheme.of(context)
+                                          .labelSmall
+                                          .fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .labelSmall
+                                          .fontStyle,
+                                    ),
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .labelSmall
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .labelSmall
+                                        .fontStyle,
+                                    lineHeight: 1.2,
+                                  ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(
@@ -189,11 +183,17 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                 child: FlutterFlowDropDown<String>(
                   controller: _model.dropdownValueController ??=
                       FormFieldController<String>(
-                    _model.dropdownValue ??= '',
+                    _model.dropdownValue = assignedProfession,
                   ),
                   options: professionOptions,
                   onChanged: (val) {
                     safeSetState(() => _model.dropdownValue = val);
+
+                    // POPRAWKA: Zapisujemy wybór do wspólnej bazy stanów ProfileState
+                    if (val != null) {
+                      ProfileState().playerGuesses[widget.profileName] = val;
+                    }
+
                     widget.onProfessionChanged?.call(val);
                   },
                   width: 200.0,
@@ -214,7 +214,7 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                             FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                         lineHeight: 1.5,
                       ),
-                  hintText: 'Dostosuj profil',
+                  hintText: 'Rola...',
                   icon: Icon(
                     Icons.arrow_drop_down_rounded,
                     color: FlutterFlowTheme.of(context).secondaryText,
@@ -233,7 +233,7 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                   isMultiSelect: false,
                 ),
               ),
-            ].divide(const SizedBox(width: 16.0)),
+            ],
           ),
         ),
       ),

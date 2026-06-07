@@ -1,7 +1,6 @@
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/components/button/button_widget.dart';
 // DODANO: Import modelu karty notatek, aby typ był znany kompilatorowi
-import '/pages/components/player_note_card/player_note_card_model.dart';
 import '/index.dart';
 import 'player_notes_widget.dart' show PlayerNotesWidget;
 import 'package:flutter/material.dart';

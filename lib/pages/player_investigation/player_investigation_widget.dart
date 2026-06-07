@@ -4,7 +4,6 @@ import '/index.dart';
 import '/pages/components/button/button_widget.dart';
 import '/pages/components/profile_tab/profile_tab_widget.dart';
 import '/pages/components/schedule_item/schedule_item_widget.dart';
-import '/pages/components/suspect_row/suspect_row_widget.dart';
 import '/pages/components/guess_row/guess_row_widget.dart'; // Dodany import
 // Poprawny import nowego pliku stanów profili
 import '/profile_state.dart';
@@ -405,17 +404,12 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                               ),
                               Builder(
                                 builder: (context) {
-                                  final selectedProfessions = [
-                                    _model.guessRowModel1.dropdownValue,
-                                    _model.guessRowModel2.dropdownValue,
-                                    _model.guessRowModel3.dropdownValue,
-                                    _model.guessRowModel4.dropdownValue,
-                                  ]
-                                      .where((value) =>
-                                          value != null && value.isNotEmpty)
-                                      .cast<String>()
-                                      .toList();
-                                  final duplicateSet = selectedProfessions
+                                  // Wyciągamy aktualną mapę zapisanych odpowiedzi z ProfileState
+                                  final guesses = ProfileState().playerGuesses;
+
+                                  // Liczymy powtórzenia zawodów, aby wykryć błędy i podświetlić na czerwono
+                                  final duplicateSet = guesses.values
+                                      .where((v) => v.isNotEmpty)
                                       .fold<Map<String, int>>({}, (map, value) {
                                         map[value] = (map[value] ?? 0) + 1;
                                         return map;
@@ -424,15 +418,6 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                       .where((entry) => entry.value > 1)
                                       .map((entry) => entry.key)
                                       .toSet();
-
-                                  final duplicate1 = duplicateSet.contains(
-                                      _model.guessRowModel1.dropdownValue);
-                                  final duplicate2 = duplicateSet.contains(
-                                      _model.guessRowModel2.dropdownValue);
-                                  final duplicate3 = duplicateSet.contains(
-                                      _model.guessRowModel3.dropdownValue);
-                                  final duplicate4 = duplicateSet.contains(
-                                      _model.guessRowModel4.dropdownValue);
 
                                   return Column(
                                     children: [
@@ -443,11 +428,9 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         child: GuessRowWidget(
                                           color: theme.primary,
                                           initials: 'AR',
-                                          nicknames:
-                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
                                           profileName: 'Alex Rivera',
-                                          scheduleHint: '',
-                                          duplicateProfession: duplicate1,
+                                          duplicateProfession: duplicateSet
+                                              .contains(guesses['Alex Rivera']),
                                           onProfessionChanged: (_) =>
                                               safeSetState(() {}),
                                         ),
@@ -459,11 +442,10 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         child: GuessRowWidget(
                                           color: theme.tertiary,
                                           initials: 'JS',
-                                          nicknames:
-                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
                                           profileName: 'Jordan Smith',
-                                          scheduleHint: '',
-                                          duplicateProfession: duplicate2,
+                                          duplicateProfession:
+                                              duplicateSet.contains(
+                                                  guesses['Jordan Smith']),
                                           onProfessionChanged: (_) =>
                                               safeSetState(() {}),
                                         ),
@@ -475,11 +457,9 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         child: GuessRowWidget(
                                           color: theme.success,
                                           initials: 'CV',
-                                          nicknames:
-                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
                                           profileName: 'Casey V.',
-                                          scheduleHint: '',
-                                          duplicateProfession: duplicate3,
+                                          duplicateProfession: duplicateSet
+                                              .contains(guesses['Casey V.']),
                                           onProfessionChanged: (_) =>
                                               safeSetState(() {}),
                                         ),
@@ -491,11 +471,9 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         child: GuessRowWidget(
                                           color: theme.warning,
                                           initials: 'TP',
-                                          nicknames:
-                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
                                           profileName: 'Taylor P.',
-                                          scheduleHint: '',
-                                          duplicateProfession: duplicate4,
+                                          duplicateProfession: duplicateSet
+                                              .contains(guesses['Taylor P.']),
                                           onProfessionChanged: (_) =>
                                               safeSetState(() {}),
                                         ),

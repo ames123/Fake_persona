@@ -5,7 +5,6 @@ import '/pages/components/player_note_card/player_note_card_widget.dart';
 import '/index.dart';
 import '/game_state.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'player_notes_model.dart';
 export 'player_notes_model.dart';
 
