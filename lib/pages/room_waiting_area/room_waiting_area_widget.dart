@@ -72,7 +72,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
     _model = createModel(context, () => RoomWaitingAreaModel());
 
     // POPRAWKA: Automatyczne symulowanie wejścia dwóch losowych osób do pokoju
-    _generateRandomPlayers();
+    //_generateRandomPlayers();
   }
 
   void _generateRandomPlayers() {

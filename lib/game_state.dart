@@ -139,7 +139,7 @@ class GameState {
     Room room = await RoomService.fetchRoom(roomCodeAdd);
     activePlayers.clear();
     for(var p in room.players){
-      activePlayers.add(p.toPlayerData());
+      if(p.displayName != currentUsername) activePlayers.add(p.toPlayerData());
     }
     currentRoomCode = room.roomCode;
     state = room.gamestate;
@@ -148,7 +148,7 @@ class GameState {
   Future<void> joinAndFetchRoomFromApi(String roomCodeAdd, String name) async {
     Room room = await RoomService.joinRoom(roomCodeAdd, name);
     for(var p in room.players){
-      activePlayers.add(p.toPlayerData());
+      if(p.displayName != currentUsername) activePlayers.add(p.toPlayerData());
     }
     currentRoomCode = room.roomCode;
     state = room.gamestate;
@@ -157,7 +157,7 @@ class GameState {
   Future<void> createAndFetchRoomFromApi(String name) async {
     Room room = await RoomService.createRoom(name);
     for(var p in room.players){
-      activePlayers.add(p.toPlayerData());
+      if(p.displayName != currentUsername) activePlayers.add(p.toPlayerData());
     }
     currentRoomCode = room.roomCode;
     state = room.gamestate;
@@ -166,7 +166,7 @@ class GameState {
   Future<void> updatePlayers() async {
     Room room = await RoomService.fetchRoom(currentRoomCode);
     for(var p in room.players){
-      activePlayers.add(p.toPlayerData());
+      if(p.displayName != currentUsername) activePlayers.add(p.toPlayerData());
     }
     state = room.gamestate;
   }
