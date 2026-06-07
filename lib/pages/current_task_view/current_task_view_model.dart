@@ -1,6 +1,7 @@
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/components/button/button_widget.dart';
 import '/pages/components/time_slot/time_slot_widget.dart';
+import '/pages/components/time_slot/time_slot_model.dart';
 import '/index.dart';
 import 'current_task_view_widget.dart' show CurrentTaskViewWidget;
 import 'package:flutter/material.dart';

@@ -2,10 +2,11 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/pages/components/button/button_widget.dart';
-import '/pages/components/time_slot2/time_slot2_widget.dart'; // Jeśli używasz ScheduleItemWidget, zmień ten import oraz nazwę klasy poniżej
+import '/pages/components/time_slot2/time_slot2_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'schedule_organizer_model.dart';
+import '/profile_state.dart';
 export 'schedule_organizer_model.dart';
 
 class ScheduleOrganizerWidget extends StatefulWidget {
@@ -30,44 +31,100 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
     super.initState();
     _model = createModel(context, () => ScheduleOrganizerModel());
 
-    // Dokładnie 5 miejsc w harmonogramie z nazwami pór dnia zamiast godzin
+    // Pobieramy instancję zapisanego profilu i harmonogramu
+    final profile = ProfileState();
+    final routine = profile.savedUserRoutine;
+
+    // POPRAWKA: Dynamiczne mapowanie ułożonych przez użytkownika zadań z ProfileState
+    // Jeśli z jakiegoś powodu mapa jest pusta (np. uruchomienie testowe od tego ekranu),
+    // aplikacja bezpiecznie pobierze wartości domyślne.
     _timeSlots = [
       {
         'id': 'ts1',
         'period': 'Rano',
-        'task': 'Czas wolny',
-        'icon': Icons.light_mode_rounded,
-        'active': true,
+        'task': routine['RANO'] ?? 'Czas wolny',
+        'icon': _getIconForTask(routine['RANO'] ?? 'Czas wolny'),
+        'active': true, // Załóżmy na start, że Rano jest aktywne
       },
       {
         'id': 'ts2',
         'period': 'Południe',
-        'task': 'Sport',
-        'icon': Icons.fitness_center_rounded,
+        'task': routine['POŁUDNIE'] ?? 'Sport',
+        'icon': _getIconForTask(routine['POŁUDNIE'] ?? 'Sport'),
         'active': false,
       },
       {
         'id': 'ts3',
         'period': 'Popołudnie',
-        'task': 'Jedzenie',
-        'icon': Icons.restaurant_rounded,
+        'task': routine['POPOŁUDNIE'] ?? 'Jedzenie',
+        'icon': _getIconForTask(routine['POPOŁUDNIE'] ?? 'Jedzenie'),
         'active': false,
       },
       {
         'id': 'ts4',
         'period': 'Wieczór',
-        'task': 'Oglądanie',
-        'icon': Icons.theater_comedy_rounded,
+        'task': routine['WIECZÓR'] ?? 'Oglądanie',
+        'icon': _getIconForTask(routine['WIECZÓR'] ?? 'Oglądanie'),
         'active': false,
       },
       {
         'id': 'ts5',
         'period': 'Noc',
-        'task': 'Czytanie',
-        'icon': Icons.local_cafe_rounded,
+        'task': routine['NOC'] ?? 'Czytanie',
+        'icon': _getIconForTask(routine['NOC'] ?? 'Czytanie'),
         'active': false,
       },
     ];
+  }
+
+  // Funkcja pomocnicza dopasowująca ikonę do czynności pobranej z ProfileState
+  IconData _getIconForTask(String task) {
+    switch (task) {
+      case 'Czytanie':
+        return Icons.menu_book_rounded;
+      case 'Czas wolny':
+        return Icons.groups_rounded;
+      case 'Pisanie książki':
+        return Icons.edit_note_rounded;
+      case 'Oglądanie':
+        return Icons.visibility_rounded;
+      case 'Słuchanie muzyki':
+        return Icons.music_note_rounded;
+      case 'Mycie':
+        return Icons.bathtub_rounded;
+      case 'Trening':
+        return Icons.fitness_center_rounded;
+      case 'Sport':
+        return Icons.sports_volleyball_rounded;
+      case 'Jedzenie':
+        return Icons.restaurant_rounded;
+      case 'Gotowanie':
+        return Icons.cookie_rounded;
+      case 'Szukanie zapasów':
+        return Icons.search_rounded;
+      case 'Odpoczynek':
+        return Icons.bed_rounded;
+      case 'Ścieranie kurzu':
+        return Icons.cleaning_services_rounded;
+      case 'Przebieranie się':
+        return Icons.checkroom_rounded;
+      case 'Dezynfekcja':
+        return Icons.vaccines_rounded;
+      case 'Pielęgnacja roślin':
+        return Icons.local_florist_rounded;
+      case 'Kradzież':
+        return Icons.local_mall_rounded;
+      case 'Badanie lekarskie':
+        return Icons.medical_services_rounded;
+      case 'Granie na PC':
+        return Icons.computer_rounded;
+      case 'Eksperyment':
+        return Icons.science_rounded;
+      case 'Próba roli':
+        return Icons.theater_comedy_rounded;
+      default:
+        return Icons.help_outline_rounded;
+    }
   }
 
   @override
@@ -78,6 +135,9 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Pobieramy dynamiczną nazwę aktualnej roli gracza
+    final currentRole = ProfileState().currentRole;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -115,10 +175,12 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // Zmiana na start dla równego układu kolumn
                         children: [
                           Text(
-                            'Kalendarz dnia',
+                            // POPRAWKA: Doklejamy dynamiczną nazwę roli obok stałego tytułu
+                            'Kalendarz dnia ($currentRole)',
                             style: FlutterFlowTheme.of(context)
                                 .titleLarge
                                 .override(
@@ -209,7 +271,6 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
                               ),
                         ),
                         const SizedBox(height: 16.0),
-                        // Dynamiczne renderowanie 5 pór dnia z listy _timeSlots
                         ListView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,

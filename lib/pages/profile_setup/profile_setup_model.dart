@@ -3,6 +3,7 @@ import '/pages/components/button/button_widget.dart';
 import '/pages/components/time_slot/time_slot_widget.dart';
 import 'profile_setup_widget.dart' show ProfileSetupWidget;
 import 'package:flutter/material.dart';
+import '/pages/components/time_slot/time_slot_model.dart';
 
 class ProfileSetupModel extends FlutterFlowModel<ProfileSetupWidget> {
   ///  State fields for stateful widgets in this page.

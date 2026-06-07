@@ -1,11 +1,13 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/pages/components/button/button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 
-// Importy komponentów i modeli na wzór ProfileSetup
+// POPRAWKA: Importujemy ProfileState z systemu konfiguracji profilu
+import '/profile_state.dart';
 import '/pages/components/time_slot/time_slot_widget.dart';
 import '/pages/current_task_view/current_task_view_model.dart';
 
@@ -30,12 +32,17 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
 
   late CurrentTaskViewModel _model;
 
+  // =========================================================================
+  // BACKEND: Zmienna globalna kontrolująca aktualną fazę gry (Pora dnia)
+  // Możliwe wartości zgodne z kluczami bazy: 'RANO', 'POŁUDNIE', 'POPOŁUDNIE', 'WIECZÓR', 'NOC'
+  // =========================================================================
+  final String currentActivePeriod = 'RANO';
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => CurrentTaskViewModel());
 
-    // Kontroler do płynnego powrotu karty na miejsce po puszczeniu palca
     _resetController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 250),
@@ -53,19 +60,16 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
-    // Jeśli animacja powrotu trwa, zatrzymujemy ją, by słuchać palca
     if (_resetController.isAnimating) {
       _resetController.stop();
     }
     setState(() {
       _isDragging = true;
-      // Reagujemy na ruch w górę (ujemna delta dy oznacza ruch palca w górę)
       _dragOffset = math.max(0.0, _dragOffset - details.delta.dy);
     });
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
-    // Gdy użytkownik puści palec, tworzymy animację powrotną od obecnego punktu do 0.0
     _isDragging = false;
     _resetAnimation = Tween<double>(
       begin: _dragOffset,
@@ -80,17 +84,72 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
         });
       });
 
-    // POPRAWKA: Uruchamiamy animację od zera za pomocą forward(from: 0.0)
     _resetController.forward(from: 0.0);
+  }
+
+  // Funkcja pomocnicza dopasowująca ikony do zadań użytkownika
+  IconData _getIconForTask(String task) {
+    switch (task) {
+      case 'Czytanie':
+        return Icons.menu_book_rounded;
+      case 'Czas wolny':
+        return Icons.groups_rounded;
+      case 'Pisanie książki':
+        return Icons.edit_note_rounded;
+      case 'Oglądanie':
+        return Icons.visibility_rounded;
+      case 'Słuchanie muzyki':
+        return Icons.music_note_rounded;
+      case 'Mycie':
+        return Icons.bathtub_rounded;
+      case 'Trening':
+        return Icons.fitness_center_rounded;
+      case 'Sport':
+        return Icons.sports_volleyball_rounded;
+      case 'Jedzenie':
+        return Icons.restaurant_rounded;
+      case 'Gotowanie':
+        return Icons.cookie_rounded;
+      case 'Szukanie zapasów':
+        return Icons.search_rounded;
+      case 'Odpoczynek':
+        return Icons.bed_rounded;
+      case 'Ścieranie kurzu':
+        return Icons.cleaning_services_rounded;
+      case 'Przebieranie się':
+        return Icons.checkroom_rounded;
+      case 'Dezynfekcja':
+        return Icons.vaccines_rounded;
+      case 'Pielęgnacja roślin':
+        return Icons.local_florist_rounded;
+      case 'Kradzież':
+        return Icons.local_mall_rounded;
+      case 'Badanie lekarskie':
+        return Icons.medical_services_rounded;
+      case 'Granie na PC':
+        return Icons.computer_rounded;
+      case 'Eksperyment':
+        return Icons.science_rounded;
+      case 'Próba roli':
+        return Icons.theater_comedy_rounded;
+      default:
+        return Icons.help_outline_rounded;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final screenSize = MediaQuery.of(context).size;
-
-    // Maksymalne przesunięcie w górę (karta odsłoni dół, ale nie ucieknie całkiem z ekranu)
     final maxDragDistance = screenSize.height * 0.6;
+
+    // Pobieramy dane zapisanego profilu gracza ze wspólnego stanu
+    final profile = ProfileState();
+    final currentRole = profile.currentRole;
+    final routine = profile.savedUserRoutine;
+
+    // Pobieramy zadanie przypisane bezpośrednio do aktualnej pory dnia, aby wyświetlić je na wielkiej karcie frontowej
+    final currentActiveTask = routine[currentActivePeriod] ?? 'Czas wolny';
 
     return GestureDetector(
       onTap: () {
@@ -103,29 +162,26 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
         body: Stack(
           children: [
             // =========================================================================
-            // WARSTWA 1 (POD SPODEM): Nieruchomy Kalendarz / Harmonogram
+            // WARSTWA 1 (POD SPODEM): Nieruchomy Kalendarz / Harmonogram z podświetleniem
             // =========================================================================
             Positioned(
               left: 24.0,
               right: 24.0,
-              bottom: 0.0, // Przypięcie do samej dolnej krawędzi ekranu
+              bottom: 0.0,
               child: SafeArea(
-                top:
-                    false, // Ignorujemy górny bezpieczny margines dla tej warstwy
+                top: false,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                      bottom: 24.0), // Margines od fizycznego dołu ekranu
+                  padding: const EdgeInsets.only(bottom: 24.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisAlignment:
-                        MainAxisAlignment.end, // Spychamy zawartość do dołu
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'TWÓJ HARMONOGRAM',
+                            'HARMONOGRAM: $currentRole',
                             style: theme.labelLarge.copyWith(
                               fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
                               fontWeight: FontWeight.w800,
@@ -140,63 +196,95 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                         ],
                       ),
                       const SizedBox(height: 16.0),
-                      // Lista slotów czasowych odwzorowana z ProfileSetup
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // SLOT 1: RANO
                           wrapWithModel(
                             model: _model.timeSlotModel1,
                             updateCallback: () => safeSetState(() {}),
                             child: TimeSlotWidget(
-                              icon: Icon(Icons.water_drop_rounded,
-                                  color: theme.primary, size: 24.0),
-                              task: 'Basen',
+                              icon: Icon(
+                                _getIconForTask(routine['RANO'] ?? 'Basen'),
+                                color: currentActivePeriod == 'RANO'
+                                    ? theme.info
+                                    : theme.primary,
+                                size: 24.0,
+                              ),
+                              task: routine['RANO'] ?? 'Basen',
                               timeLabel: 'Rano',
-                              editable: true,
+                              editable: currentActivePeriod ==
+                                  'RANO', // Podświetlenie aktywnego rzędu
                             ),
                           ),
+                          // SLOT 2: POŁUDNIE
                           wrapWithModel(
                             model: _model.timeSlotModel2,
                             updateCallback: () => safeSetState(() {}),
                             child: TimeSlotWidget(
-                              icon: Icon(Icons.groups_rounded,
-                                  color: theme.primary, size: 24.0),
-                              task: 'Czas wolny',
+                              icon: Icon(
+                                _getIconForTask(
+                                    routine['POŁUDNIE'] ?? 'Czas wolny'),
+                                color: currentActivePeriod == 'POŁUDNIE'
+                                    ? theme.info
+                                    : theme.primary,
+                                size: 24.0,
+                              ),
+                              task: routine['POŁUDNIE'] ?? 'Czas wolny',
                               timeLabel: 'Południe',
-                              editable: true,
+                              editable: currentActivePeriod == 'POŁUDNIE',
                             ),
                           ),
+                          // SLOT 3: POPOŁUDNIE
                           wrapWithModel(
                             model: _model.timeSlotModel3,
                             updateCallback: () => safeSetState(() {}),
                             child: TimeSlotWidget(
-                              icon: Icon(Icons.shield_rounded,
-                                  color: theme.primary, size: 24.0),
-                              task: 'Jedzenie',
+                              icon: Icon(
+                                _getIconForTask(
+                                    routine['POPOŁUDNIE'] ?? 'Jedzenie'),
+                                color: currentActivePeriod == 'POPOŁUDNIE'
+                                    ? theme.info
+                                    : theme.primary,
+                                size: 24.0,
+                              ),
+                              task: routine['POPOŁUDNIE'] ?? 'Jedzenie',
                               timeLabel: 'Popołudnie',
-                              editable: true,
+                              editable: currentActivePeriod == 'POPOŁUDNIE',
                             ),
                           ),
+                          // SLOT 4: WIECZÓR
                           wrapWithModel(
                             model: _model.timeSlotModel4,
                             updateCallback: () => safeSetState(() {}),
                             child: TimeSlotWidget(
-                              icon: Icon(Icons.inventory_2_rounded,
-                                  color: theme.primary, size: 24.0),
-                              task: 'Sport',
+                              icon: Icon(
+                                _getIconForTask(routine['WIECZÓR'] ?? 'Sport'),
+                                color: currentActivePeriod == 'WIECZÓR'
+                                    ? theme.info
+                                    : theme.primary,
+                                size: 24.0,
+                              ),
+                              task: routine['WIECZÓR'] ?? 'Sport',
                               timeLabel: 'Wieczór',
-                              editable: true,
+                              editable: currentActivePeriod == 'WIECZÓR',
                             ),
                           ),
+                          // SLOT 5: NOC
                           wrapWithModel(
                             model: _model.timeSlotModel5,
                             updateCallback: () => safeSetState(() {}),
                             child: TimeSlotWidget(
-                              icon: Icon(Icons.nightlight_round,
-                                  color: theme.primary, size: 24.0),
-                              task: 'Gotowanie',
+                              icon: Icon(
+                                _getIconForTask(routine['NOC'] ?? 'Gotowanie'),
+                                color: currentActivePeriod == 'NOC'
+                                    ? theme.info
+                                    : theme.primary,
+                                size: 24.0,
+                              ),
+                              task: routine['NOC'] ?? 'Gotowanie',
                               timeLabel: 'Noc',
-                              editable: true,
+                              editable: currentActivePeriod == 'NOC',
                             ),
                           ),
                         ].divide(const SizedBox(height: 8.0)),
@@ -208,7 +296,7 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
             ),
 
             // =========================================================================
-            // WARSTWA 2 (NA GÓRZE): Główna karta na cały ekran reagująca na przeciąganie
+            // WARSTWA 2 (NA GÓRZE): Główna karta reagująca na przeciąganie z dynamicznym zadaniem
             // =========================================================================
             Transform.translate(
               offset: Offset(0, -math.min(_dragOffset, maxDragDistance)),
@@ -221,7 +309,6 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                   height: screenSize.height,
                   decoration: BoxDecoration(
                     color: theme.secondaryBackground,
-                    // Dodajemy delikatny cień od spodu, widoczny podczas podnoszenia karty
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.12),
@@ -247,19 +334,21 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'RANO',
+                            // Dynamicznie wyświetla aktualną porę dnia zapisaną w systemie
+                            currentActivePeriod,
                             style: theme.displayLarge.copyWith(
-                              color: Colors.red[400],
+                              color: const Color.fromARGB(255, 226, 33, 30),
                               fontWeight: FontWeight.bold,
                               fontSize: 84.0,
                             ),
                           ),
                           const SizedBox(height: 24),
                           Text(
+                            // Dynamiczny komunikat mówiący graczowi, co ma fizycznie zrobić na planszy
                             'Przesuń się na pole zgodnie ze swoim harmonogramem',
                             textAlign: TextAlign.center,
                             style: theme.bodyLarge.copyWith(
-                              color: Colors.red[400],
+                              color: const Color.fromARGB(255, 226, 33, 30),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -301,7 +390,6 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                             ),
                           ),
                           const Spacer(),
-                          // Wskazówka i animowany/wizualny element przeciągania na dole ekranu
                           Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -327,11 +415,6 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                 ),
               ),
             ),
-
-            // =========================================================================
-            // WARSTWA 3 (AKCESORIA): Przyciski UI zawsze przypięte do góry ekranu
-            // =========================================================================
-            // Przyciski są poza elementem przesuwanym, dzięki czemu zawsze są dostępne pod palcem
           ],
         ),
       ),
