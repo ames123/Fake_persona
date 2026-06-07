@@ -157,7 +157,7 @@ class _GuessRowWidgetState extends State<GuessRowWidget> {
                       assignedProfession != null &&
                               assignedProfession.isNotEmpty
                           ? 'Zawód: $assignedProfession'
-                          : 'Dostosuj profil',
+                          : '',
                       style: FlutterFlowTheme.of(context).labelSmall.override(
                             font: GoogleFonts.spaceGrotesk(
                               fontWeight: FlutterFlowTheme.of(context)

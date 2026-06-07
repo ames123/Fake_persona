@@ -5,6 +5,9 @@ import '/pages/components/button/button_widget.dart';
 import '/pages/components/profile_tab/profile_tab_widget.dart';
 import '/pages/components/schedule_item/schedule_item_widget.dart';
 import '/pages/components/suspect_row/suspect_row_widget.dart';
+import '/pages/components/guess_row/guess_row_widget.dart'; // Dodany import
+// Poprawny import nowego pliku stanów profili
+import '/profile_state.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'player_investigation_model.dart';
@@ -23,8 +26,50 @@ class PlayerInvestigationWidget extends StatefulWidget {
 
 class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   late PlayerInvestigationModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Inicjalizacja bezpiecznej klasy stanów profili
+  final ProfileState _profileState = ProfileState();
+
+  // Domyślny start ustawiony na pierwszą rolę z Twojej tabeli
+  String _activeRoleName = 'Pisarz';
+
+  final Map<String, String> _profileGenitives = {
+    'Pisarz': 'pisarza',
+    'Sportowiec': 'sportowca',
+    'Kucharz': 'kucharza',
+    'Sprzątacz': 'sprzątacza',
+    'Ogrodnik': 'ogrodnika',
+    'Złodziej': 'złodzieja',
+    'Lekarz': 'lekarza',
+    'Gamer': 'gamera',
+    'Naukowiec': 'naukowca',
+    'Aktor': 'aktora',
+  };
+
+  final Map<String, IconData> _activityIcons = {
+    'Gotowanie': Icons.soup_kitchen_rounded,
+    'Szukanie zapasów': Icons.search_rounded,
+    'Jedzenie': Icons.restaurant_rounded,
+    'Granie na PC': Icons.computer_rounded,
+    'Próba roli': Icons.theater_comedy_rounded,
+    'Oglądanie': Icons.tv_rounded,
+    'Pisanie książki': Icons.menu_book_rounded,
+    'Eksperyment': Icons.science_rounded,
+    'Czytanie': Icons.auto_stories_rounded,
+    'Pielęgnacja roślin': Icons.yard_rounded,
+    'Trening': Icons.fitness_center_rounded,
+    'Sport': Icons.sports_volleyball_rounded,
+    'Badanie lekarskie': Icons.medical_services_rounded,
+    'Słuchanie muzyki': Icons.headphones_rounded,
+    'Przebieranie się': Icons.checkroom_rounded,
+    'Kradzież': Icons.gavel_rounded,
+    'Mycie': Icons.clean_hands_rounded,
+    'Ścieranie kurzu': Icons.cleaning_services_rounded,
+    'Dezynfekcja': Icons.vaccines_rounded,
+    'Odpoczynek': Icons.hotel_rounded,
+    'Czas wolny': Icons.accessibility_new_rounded,
+  };
 
   @override
   void initState() {
@@ -35,12 +80,30 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  IconData _getIconForActivity(String? activity, IconData defaultIcon) {
+    if (activity == null || !_activityIcons.containsKey(activity)) {
+      return defaultIcon;
+    }
+    return _activityIcons[activity]!;
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
+    // Dynamiczne pobieranie harmonogramu z bazy ról dla aktywnego profilu
+    final Map<String, String> currentRoutine =
+        _profileState.staticRoutines[_activeRoleName] ?? {};
+    final String genitiveName =
+        _profileGenitives[_activeRoleName] ?? _activeRoleName.toLowerCase();
+
+    // Wyciągamy kompletną listę wszystkich 10 ról z bazy jako zakładki
+    final List<String> availableRoles =
+        _profileState.staticRoutines.keys.toList();
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -48,15 +111,16 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // NAGŁÓWEK (Oryginalny, zgrabny)
             Container(
               decoration: BoxDecoration(
-                color: FlutterFlowTheme.of(context).secondaryBackground,
+                color: theme.secondaryBackground,
                 shape: BoxShape.rectangle,
               ),
               child: Column(
@@ -66,611 +130,394 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                   Padding(
                     padding: const EdgeInsetsDirectional.fromSTEB(
                         16.0, 24.0, 16.0, 24.0),
-                    child: Container(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Śledzctwo',
-                                style: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .override(
-                                      font: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w900,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .headlineMedium
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w900,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .headlineMedium
-                                          .fontStyle,
-                                      lineHeight: 1.2,
-                                    ),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.timer_rounded,
-                                    color: FlutterFlowTheme.of(context).error,
-                                    size: 16.0,
-                                  ),
-                                  Text(
-                                    '04:52',
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelLarge
-                                        .override(
-                                          font: GoogleFonts.spaceGrotesk(
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelLarge
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .error,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelLarge
-                                                  .fontStyle,
-                                          lineHeight: 1.2,
-                                        ),
-                                  ),
-                                ].divide(const SizedBox(width: 4.0)),
-                              ),
-                            ].divide(const SizedBox(height: 4.0)),
-                          ),
-                          GestureDetector(
-                            onTap: () => context.goNamed(
-                              FinalGuessWidget.routeName,
-                              extra: {
-                                kTransitionInfoKey: const TransitionInfo(
-                                  hasTransition: true,
-                                  transitionType:
-                                      PageTransitionType.rightToLeft,
-                                  duration: Duration(milliseconds: 300),
-                                ),
-                              },
-                            ),
-                            child: wrapWithModel(
-                              model: _model.buttonModel1,
-                              updateCallback: () => safeSetState(() {}),
-                              child: ButtonWidget(
-                                content: 'Ostateczne Zgadnięcie',
-                                icon: Icon(
-                                  Icons.psychology_rounded,
-                                  color: FlutterFlowTheme.of(context).onPrimary,
-                                  size: 16.0,
-                                ),
-                                iconPresent: true,
-                                iconEndPresent: false,
-                                variant: 'primary',
-                                size: 'small',
-                                fullWidth: false,
-                                loading: false,
-                                disabled: false,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Śledztwo',
+                              style: theme.headlineMedium.override(
+                                fontFamily: GoogleFonts.poppins().fontFamily,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Icon(Icons.timer_rounded,
+                                    color: theme.error, size: 16.0),
+                                Text(
+                                  '04:52',
+                                  style: theme.labelLarge.override(
+                                    fontFamily:
+                                        GoogleFonts.spaceGrotesk().fontFamily,
+                                    color: theme.error,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ].divide(const SizedBox(width: 4.0)),
+                            ),
+                          ].divide(const SizedBox(height: 4.0)),
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              context.goNamed(FinalGuessWidget.routeName),
+                          child: ButtonWidget(
+                            content: 'Ostateczne Zgadnięcie',
+                            icon: Icon(Icons.psychology_rounded,
+                                color: theme.onPrimary, size: 16.0),
+                            iconPresent: true,
+                            iconEndPresent: false,
+                            variant: 'primary',
+                            size: 'small',
+                            fullWidth: false,
+                            loading: false,
+                            disabled: false,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  Container(
-                    height: 1.0,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).alternate,
-                      shape: BoxShape.rectangle,
-                    ),
-                  ),
+                  Container(height: 1.0, color: theme.alternate),
                 ],
               ),
             ),
+
+            // SEKCJA GŁÓWNA (Dynamiczne zakładki ról, kalendarz i wybór postaci)
             Expanded(
               flex: 1,
               child: SingleChildScrollView(
                 primary: false,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(24.0),
-                      child: Container(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Profile',
-                                  style: FlutterFlowTheme.of(context)
-                                      .labelSmall
-                                      .override(
-                                        font: GoogleFonts.spaceGrotesk(
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelSmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .labelSmall
-                                            .fontStyle,
-                                        lineHeight: 1.2,
-                                      ),
-                                ),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      wrapWithModel(
-                                        model: _model.profileTabModel1,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: const ProfileTabWidget(
-                                          initials: 'K',
-                                          name: 'Kucharz',
-                                          onTap: 'On Tap',
-                                          active: true,
-                                        ),
-                                      ),
-                                      wrapWithModel(
-                                        model: _model.profileTabModel2,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: const ProfileTabWidget(
-                                          initials: 'S',
-                                          name: 'Sportowiec',
-                                          onTap: 'navigate:PlayerInvestigation',
-                                          active: false,
-                                        ),
-                                      ),
-                                      wrapWithModel(
-                                        model: _model.profileTabModel3,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: const ProfileTabWidget(
-                                          initials: 'O',
-                                          name: 'Ogrodik',
-                                          onTap: 'navigate:PlayerInvestigation',
-                                          active: false,
-                                        ),
-                                      ),
-                                      wrapWithModel(
-                                        model: _model.profileTabModel4,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: const ProfileTabWidget(
-                                          initials: 'P',
-                                          name: 'Pisarz',
-                                          onTap: 'navigate:PlayerInvestigation',
-                                          active: false,
-                                        ),
-                                      ),
-                                    ].divide(const SizedBox(width: 8.0)),
-                                  ),
-                                ),
-                              ].divide(const SizedBox(height: 16.0)),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                boxShadow: [
-                                  BoxShadow(
-                                    blurRadius: 20.0,
-                                    color:
-                                        FlutterFlowTheme.of(context).primary13,
-                                    offset: const Offset(
-                                      0.0,
-                                      8.0,
-                                    ),
-                                    spreadRadius: 0.0,
-                                  )
-                                ],
-                                borderRadius: BorderRadius.circular(32.0),
-                                shape: BoxShape.rectangle,
-                                border: Border.all(
-                                  color: FlutterFlowTheme.of(context).primary30,
-                                  width: 1.0,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Profile',
+                                style: theme.labelSmall.override(
+                                  fontFamily:
+                                      GoogleFonts.spaceGrotesk().fontFamily,
+                                  color: theme.secondaryText,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Container(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                              // DYNAMICZNE PRZEŁĄCZANIE PROFILI RÓL Z TABELI
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: availableRoles
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                        final int index = entry.key;
+                                        final String role = entry.value;
+                                        final bool isActive =
+                                            _activeRoleName == role;
+
+                                        // Pobranie pierwszej litery nazwy roli jako dynamiczny inicjał
+                                        final String initials = role.length >= 2
+                                            ? role.substring(0, 2)
+                                            : role.toUpperCase();
+
+                                        return GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _activeRoleName =
+                                                  role; // Zmiana roli na klikniętą
+                                            });
+                                          },
+                                          child: wrapWithModel(
+                                            model: index == 0
+                                                ? _model.profileTabModel1
+                                                : index == 1
+                                                    ? _model.profileTabModel2
+                                                    : index == 2
+                                                        ? _model
+                                                            .profileTabModel3
+                                                        : _model
+                                                            .profileTabModel4,
+                                            updateCallback: () =>
+                                                safeSetState(() {}),
+                                            child: ProfileTabWidget(
+                                              initials: initials,
+                                              name: role,
+                                              active: isActive,
+                                              onTap: '',
+                                            ),
+                                          ),
+                                        );
+                                      })
+                                      .toList()
+                                      .divide(const SizedBox(width: 8.0)),
+                                ),
+                              ),
+                            ].divide(const SizedBox(height: 16.0)),
+                          ),
+
+                          // KAFELEK HARMONOGRAMU: Dane 1:1 z tabeli ról
+                          Container(
+                            decoration: BoxDecoration(
+                              color: theme.secondaryBackground,
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 20.0,
+                                  color: theme.primary13,
+                                  offset: const Offset(0.0, 8.0),
+                                )
+                              ],
+                              borderRadius: BorderRadius.circular(32.0),
+                              border: Border.all(
+                                  color: theme.primary30, width: 1.0),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                'Kalendarz kucharza',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .titleMedium
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.urbanist(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleMedium
-                                                              .fontStyle,
-                                                      lineHeight: 1.3,
-                                                    ),
-                                              ),
-                                              Text(
-                                                'Oryginalna rutyna',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodySmall
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.urbanist(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodySmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodySmall
-                                                                .fontStyle,
-                                                      ),
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .secondaryText,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodySmall
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodySmall
-                                                              .fontStyle,
-                                                      lineHeight: 1.4,
-                                                    ),
-                                              ),
-                                            ].divide(
-                                                const SizedBox(height: 4.0)),
-                                          ),
-                                          Icon(
-                                            Icons.restaurant_menu_rounded,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            size: 28.0,
-                                          ),
-                                        ],
-                                      ),
-                                      Divider(
-                                        height: 16.0,
-                                        thickness: 1.0,
-                                        indent: 0.0,
-                                        endIndent: 0.0,
-                                        color: FlutterFlowTheme.of(context)
-                                            .alternate,
-                                      ),
                                       Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .stretch, // Rozciąga kafelki na pełną szerokość
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          wrapWithModel(
-                                            model: _model.scheduleItemModel1,
-                                            updateCallback: () =>
-                                                safeSetState(() {}),
-                                            child: ScheduleItemWidget(
-                                              leadingIcon: Icons.wb_sunny,
-                                              period: 'Rano',
-                                              activity: 'Gotowanie',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondary,
-                                              time: '',
+                                          Text(
+                                            'Kalendarz $genitiveName',
+                                            style: theme.titleMedium.override(
+                                              fontFamily: GoogleFonts.urbanist()
+                                                  .fontFamily,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          wrapWithModel(
-                                            model: _model.scheduleItemModel2,
-                                            updateCallback: () =>
-                                                safeSetState(() {}),
-                                            child: ScheduleItemWidget(
-                                              leadingIcon:
-                                                  Icons.restaurant_rounded,
-                                              period: 'Południe',
-                                              activity: 'Jedzenie',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .tertiary,
-                                              time: '',
+                                          Text(
+                                            'Główny harmonogram dnia',
+                                            style: theme.bodySmall.override(
+                                              fontFamily: GoogleFonts.urbanist()
+                                                  .fontFamily,
+                                              color: theme.secondaryText,
                                             ),
                                           ),
-                                          wrapWithModel(
-                                            model: _model.scheduleItemModel3,
-                                            updateCallback: () =>
-                                                safeSetState(() {}),
-                                            child: ScheduleItemWidget(
-                                              leadingIcon: Icons.park_rounded,
-                                              period: 'Popołudnie',
-                                              activity: 'Czas wolny',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              time: '',
-                                            ),
-                                          ),
-                                          wrapWithModel(
-                                            model: _model.scheduleItemModel4,
-                                            updateCallback: () =>
-                                                safeSetState(() {}),
-                                            child: ScheduleItemWidget(
-                                              leadingIcon:
-                                                  Icons.dark_mode_rounded,
-                                              period: 'Wieczór',
-                                              activity: 'Czytanie książki',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryText,
-                                              time: '',
-                                            ),
-                                          ),
-                                          wrapWithModel(
-                                            model: _model.scheduleItemModel5,
-                                            updateCallback: () =>
-                                                safeSetState(() {}),
-                                            child: ScheduleItemWidget(
-                                              leadingIcon:
-                                                  Icons.bedtime_rounded,
-                                              period: 'Noc',
-                                              activity: 'Sen',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              time: '',
-                                            ),
-                                          ),
-                                        ].divide(const SizedBox(
-                                            height:
-                                                8.0)), // Zachowany oryginalny odstęp między kafelkami
+                                        ].divide(const SizedBox(height: 4.0)),
+                                      ),
+                                      Icon(Icons.calendar_today_rounded,
+                                          color: theme.primary, size: 24.0),
+                                    ],
+                                  ),
+                                  Divider(
+                                      height: 16.0,
+                                      thickness: 1.0,
+                                      color: theme.alternate),
+
+                                  // Lista kafelków czasu
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      ScheduleItemWidget(
+                                        leadingIcon: _getIconForActivity(
+                                            currentRoutine['RANO'],
+                                            Icons.wb_sunny_rounded),
+                                        period: 'Rano',
+                                        activity: currentRoutine['RANO'] ??
+                                            'Brak danych',
+                                        color: theme.secondary,
+                                        time: '',
+                                      ),
+                                      ScheduleItemWidget(
+                                        leadingIcon: _getIconForActivity(
+                                            currentRoutine['POŁUDNIE'],
+                                            Icons.restaurant_rounded),
+                                        period: 'Południe',
+                                        activity: currentRoutine['POŁUDNIE'] ??
+                                            'Brak danych',
+                                        color: theme.tertiary,
+                                        time: '',
+                                      ),
+                                      ScheduleItemWidget(
+                                        leadingIcon: _getIconForActivity(
+                                            currentRoutine['POPOŁUDNIE'],
+                                            Icons.park_rounded),
+                                        period: 'Popołudnie',
+                                        activity:
+                                            currentRoutine['POPOŁUDNIE'] ??
+                                                'Brak danych',
+                                        color: theme.primary,
+                                        time: '',
+                                      ),
+                                      ScheduleItemWidget(
+                                        leadingIcon: _getIconForActivity(
+                                            currentRoutine['WIECZÓR'],
+                                            Icons.dark_mode_rounded),
+                                        period: 'Wieczór',
+                                        activity: currentRoutine['WIECZÓR'] ??
+                                            'Brak danych',
+                                        color: theme.secondaryText,
+                                        time: '',
+                                      ),
+                                      ScheduleItemWidget(
+                                        leadingIcon: _getIconForActivity(
+                                            currentRoutine['NOC'],
+                                            Icons.bedtime_rounded),
+                                        period: 'Noc',
+                                        activity: currentRoutine['NOC'] ??
+                                            'Brak danych',
+                                        color: theme.primaryText,
+                                        time: '',
+                                      ),
+                                    ].divide(const SizedBox(height: 8.0)),
+                                  ),
+                                ].divide(const SizedBox(height: 16.0)),
+                              ),
+                            ),
+                          ),
+
+                          // NOWA SEKCJA: Kopiowana 1:1 z final_guess pod harmonogramem
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'Zidentyfikuj postacie',
+                                style: theme.titleMedium.override(
+                                  fontFamily: GoogleFonts.urbanist().fontFamily,
+                                  color: theme.primaryText,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Builder(
+                                builder: (context) {
+                                  final selectedProfessions = [
+                                    _model.guessRowModel1.dropdownValue,
+                                    _model.guessRowModel2.dropdownValue,
+                                    _model.guessRowModel3.dropdownValue,
+                                    _model.guessRowModel4.dropdownValue,
+                                  ]
+                                      .where((value) =>
+                                          value != null && value.isNotEmpty)
+                                      .cast<String>()
+                                      .toList();
+                                  final duplicateSet = selectedProfessions
+                                      .fold<Map<String, int>>({}, (map, value) {
+                                        map[value] = (map[value] ?? 0) + 1;
+                                        return map;
+                                      })
+                                      .entries
+                                      .where((entry) => entry.value > 1)
+                                      .map((entry) => entry.key)
+                                      .toSet();
+
+                                  final duplicate1 = duplicateSet.contains(
+                                      _model.guessRowModel1.dropdownValue);
+                                  final duplicate2 = duplicateSet.contains(
+                                      _model.guessRowModel2.dropdownValue);
+                                  final duplicate3 = duplicateSet.contains(
+                                      _model.guessRowModel3.dropdownValue);
+                                  final duplicate4 = duplicateSet.contains(
+                                      _model.guessRowModel4.dropdownValue);
+
+                                  return Column(
+                                    children: [
+                                      wrapWithModel(
+                                        model: _model.guessRowModel1,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: theme.primary,
+                                          initials: 'AR',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Alex Rivera',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate1,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
+                                      ),
+                                      wrapWithModel(
+                                        model: _model.guessRowModel2,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: theme.tertiary,
+                                          initials: 'JS',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Jordan Smith',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate2,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
+                                      ),
+                                      wrapWithModel(
+                                        model: _model.guessRowModel3,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: theme.success,
+                                          initials: 'CV',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Casey V.',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate3,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
+                                      ),
+                                      wrapWithModel(
+                                        model: _model.guessRowModel4,
+                                        updateCallback: () =>
+                                            safeSetState(() {}),
+                                        child: GuessRowWidget(
+                                          color: theme.warning,
+                                          initials: 'TP',
+                                          nicknames:
+                                              'Kucharz,Pisarz,Sportowiec,Ogrodnik',
+                                          profileName: 'Taylor P.',
+                                          scheduleHint: '',
+                                          duplicateProfession: duplicate4,
+                                          onProfessionChanged: (_) =>
+                                              safeSetState(() {}),
+                                        ),
                                       ),
                                     ].divide(const SizedBox(height: 16.0)),
-                                  ),
-                                ),
+                                  );
+                                },
                               ),
-                            ),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Dedukcja',
-                                      style: FlutterFlowTheme.of(context)
-                                          .titleMedium
-                                          .override(
-                                            font: GoogleFonts.urbanist(
-                                              fontWeight: FontWeight.bold,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleMedium
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleMedium
-                                                    .fontStyle,
-                                            lineHeight: 1.3,
-                                          ),
-                                    ),
-                                    Container(
-                                      height: 34.0,
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .success10,
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        border: Border.all(
-                                          color: FlutterFlowTheme.of(context)
-                                              .alternate,
-                                          width: 1.0,
-                                        ),
-                                      ),
-                                      alignment:
-                                          const AlignmentDirectional(0.0, 0.0),
-                                      child: Padding(
-                                        padding: const EdgeInsetsDirectional
-                                            .fromSTEB(12.0, 0.0, 12.0, 0.0),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.check_rounded,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .success,
-                                              size: 16.0,
-                                            ),
-                                            Text(
-                                              '4/6 Zidentyfikowanych',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts
-                                                            .spaceGrotesk(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .success,
-                                                        fontSize: 14.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                        lineHeight: 1.2,
-                                                      ),
-                                            ),
-                                          ].divide(const SizedBox(width: 6.0)),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    wrapWithModel(
-                                      model: _model.suspectRowModel1,
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: SuspectRowWidget(
-                                        accentBg: FlutterFlowTheme.of(context)
-                                            .secondary,
-                                        initials: 'K',
-                                        profileName: 'Kucharz',
-                                        assignedNick: false,
-                                      ),
-                                    ),
-                                    wrapWithModel(
-                                      model: _model.suspectRowModel2,
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: SuspectRowWidget(
-                                        accentBg: FlutterFlowTheme.of(context)
-                                            .primary,
-                                        initials: 'O',
-                                        profileName: 'Ogrodnik',
-                                        assignedNick: false,
-                                      ),
-                                    ),
-                                    wrapWithModel(
-                                      model: _model.suspectRowModel3,
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: SuspectRowWidget(
-                                        accentBg: FlutterFlowTheme.of(context)
-                                            .tertiary,
-                                        initials: 'P',
-                                        profileName: 'Pisarz',
-                                        assignedNick: false,
-                                      ),
-                                    ),
-                                    wrapWithModel(
-                                      model: _model.suspectRowModel4,
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: const SuspectRowWidget(
-                                        accentBg: Color(0xFFA855F7),
-                                        initials: 'S',
-                                        profileName: 'Sportowiec',
-                                        assignedNick: false,
-                                      ),
-                                    ),
-                                  ].divide(const SizedBox(height: 8.0)),
-                                ),
-                              ].divide(const SizedBox(height: 16.0)),
-                            ),
-                          ].divide(const SizedBox(height: 24.0)),
-                        ),
+                            ].divide(const SizedBox(height: 24.0)),
+                          ),
+                        ].divide(const SizedBox(height: 24.0)),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+
+            // DOLNY PASEK NAWIGACJI (Oryginalny, zgrabny)
             Container(
               decoration: BoxDecoration(
-                color: FlutterFlowTheme.of(context).secondaryBackground,
+                color: theme.secondaryBackground,
                 shape: BoxShape.rectangle,
               ),
               child: Column(
@@ -680,93 +527,63 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                   Container(
                     height: 1.0,
                     decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).alternate,
-                      shape: BoxShape.rectangle,
-                    ),
+                        color: theme.alternate, shape: BoxShape.rectangle),
                   ),
                   Padding(
                     padding: const EdgeInsetsDirectional.fromSTEB(
                         24.0, 16.0, 24.0, 16.0),
-                    child: Container(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: GestureDetector(
-                              onTap: () => context.goNamed(
-                                PlayerNotesWidget.routeName,
-                                extra: {
-                                  kTransitionInfoKey: const TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType:
-                                        PageTransitionType.rightToLeft,
-                                    duration: Duration(milliseconds: 300),
-                                  ),
-                                },
-                              ),
-                              child: wrapWithModel(
-                                model: _model.buttonModel2,
-                                updateCallback: () => safeSetState(() {}),
-                                child: ButtonWidget(
-                                  content: 'Moje notaki',
-                                  icon: Icon(
-                                    Icons.description_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    size: 16.0,
-                                  ),
-                                  iconPresent: true,
-                                  iconEndPresent: false,
-                                  variant: 'outline',
-                                  size: 'medium',
-                                  fullWidth: true,
-                                  loading: false,
-                                  disabled: false,
-                                ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: GestureDetector(
+                            onTap: () =>
+                                context.goNamed(PlayerNotesWidget.routeName),
+                            child: wrapWithModel(
+                              model: _model.buttonModel2,
+                              updateCallback: () => safeSetState(() {}),
+                              child: ButtonWidget(
+                                content: 'Moje notatki',
+                                icon: Icon(Icons.description_rounded,
+                                    color: theme.primaryText, size: 16.0),
+                                iconPresent: true,
+                                iconEndPresent: false,
+                                variant: 'outline',
+                                size: 'medium',
+                                fullWidth: true,
+                                loading: false,
+                                disabled: false,
                               ),
                             ),
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: GestureDetector(
-                              onTap: () => context.goNamed(
-                                ScheduleOrganizerWidget.routeName,
-                                extra: {
-                                  kTransitionInfoKey: const TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType:
-                                        PageTransitionType.rightToLeft,
-                                    duration: Duration(milliseconds: 300),
-                                  ),
-                                },
-                              ),
-                              child: wrapWithModel(
-                                model: _model.buttonModel3,
-                                updateCallback: () => safeSetState(() {}),
-                                child: ButtonWidget(
-                                  content: 'Mój kalendarz',
-                                  icon: Icon(
-                                    Icons.event_note_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .onSecondary,
-                                    size: 16.0,
-                                  ),
-                                  iconPresent: true,
-                                  iconEndPresent: false,
-                                  variant: 'secondary',
-                                  size: 'medium',
-                                  fullWidth: true,
-                                  loading: false,
-                                  disabled: false,
-                                ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: GestureDetector(
+                            onTap: () => context
+                                .goNamed(ScheduleOrganizerWidget.routeName),
+                            child: wrapWithModel(
+                              model: _model.buttonModel3,
+                              updateCallback: () => safeSetState(() {}),
+                              child: ButtonWidget(
+                                content: 'Mój kalendarz',
+                                icon: Icon(Icons.event_note_rounded,
+                                    color: theme.onSecondary, size: 16.0),
+                                iconPresent: true,
+                                iconEndPresent: false,
+                                variant: 'secondary',
+                                size: 'medium',
+                                fullWidth: true,
+                                loading: false,
+                                disabled: false,
                               ),
                             ),
                           ),
-                        ].divide(const SizedBox(width: 16.0)),
-                      ),
+                        ),
+                      ].divide(const SizedBox(width: 16.0)),
                     ),
                   ),
                 ],

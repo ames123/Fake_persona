@@ -5,6 +5,7 @@ import '/pages/components/schedule_item/schedule_item_widget.dart';
 import '/pages/components/suspect_row/suspect_row_widget.dart';
 import 'player_investigation_widget.dart' show PlayerInvestigationWidget;
 import 'package:flutter/material.dart';
+import '/pages/components/guess_row/guess_row_model.dart';
 
 class PlayerInvestigationModel
     extends FlutterFlowModel<PlayerInvestigationWidget> {
@@ -42,6 +43,10 @@ class PlayerInvestigationModel
   late ButtonModel buttonModel2;
   // Model for Button.
   late ButtonModel buttonModel3;
+  late GuessRowModel guessRowModel1;
+  late GuessRowModel guessRowModel2;
+  late GuessRowModel guessRowModel3;
+  late GuessRowModel guessRowModel4;
 
   @override
   void initState(BuildContext context) {
@@ -61,6 +66,10 @@ class PlayerInvestigationModel
     suspectRowModel4 = createModel(context, () => SuspectRowModel());
     buttonModel2 = createModel(context, () => ButtonModel());
     buttonModel3 = createModel(context, () => ButtonModel());
+    guessRowModel1 = createModel(context, () => GuessRowModel());
+    guessRowModel2 = createModel(context, () => GuessRowModel());
+    guessRowModel3 = createModel(context, () => GuessRowModel());
+    guessRowModel4 = createModel(context, () => GuessRowModel());
   }
 
   @override
@@ -81,5 +90,9 @@ class PlayerInvestigationModel
     suspectRowModel4.dispose();
     buttonModel2.dispose();
     buttonModel3.dispose();
+    guessRowModel1.dispose();
+    guessRowModel2.dispose();
+    guessRowModel3.dispose();
+    guessRowModel4.dispose();
   }
 }
