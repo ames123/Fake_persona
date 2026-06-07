@@ -205,7 +205,7 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                           size: 32.0,
                         ),
                         iconColor: FlutterFlowTheme.of(context).onPrimary,
-                        onTap: () {
+                        onTap: () async {
                           // POPRAWKA: Walidacja dla tworzenia pokoju (wymagany tylko Nick)
                           final inputName =
                               _model.aliasTextFieldModel.text?.trim() ?? '';
@@ -222,8 +222,8 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                             aliasHasError = false;
                           });
 
-                          const roomCode = 'NEWROOM';
-                          GameState().joinRoom(inputName, roomCode);
+                          String roomCode = 'NEWROOM';
+                          GameState().createRoom(inputName);
 
                           context.pushNamed(
                             'RoomWaitingArea',

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/components/button/button_widget.dart';
@@ -33,15 +35,35 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  Timer? timer;
+
+  void initTimer() {
+    if (timer != null && timer!.isActive) return;
+
+    timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      GameState().refreshRoom();
+      setState(() {});
+    });
+  }
+
+
   @override
   void initState() {
     super.initState();
+    getGamestate();
+    initTimer();
     _model = createModel(context, () => RoomWaitingAreaModel());
+  }
+
+  Future<void> getGamestate() async{
+    await GameState().updatePlayers();
+    setState(() {});
   }
 
   @override
   void dispose() {
     _model.dispose();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -163,9 +185,9 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                 children: [
                                   Text(
                                     // POPRAWKA: Dynamiczny kod pokoju z parametrów widżetu
-                                    widget.roomCode.isNotEmpty
-                                        ? widget.roomCode
-                                        : 'XJ92BA',
+                                    GameState().currentRoomCode.isNotEmpty
+                                        ? GameState().currentRoomCode
+                                        : 'pls wait',
                                     style: FlutterFlowTheme.of(context)
                                         .headlineLarge
                                         .override(
@@ -478,7 +500,10 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () => context.goNamed('LobbyEntry'),
+                                  onTap: () {
+                                    GameState().resetNewGame();
+                                    context.goNamed('LobbyEntry');
+                                  } ,
                                   child: wrapWithModel(
                                     model: _model.buttonModel2,
                                     updateCallback: () => safeSetState(() {}),

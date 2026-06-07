@@ -1,3 +1,6 @@
+import 'package:schedule_sleuth/room.dart';
+import 'package:schedule_sleuth/services/room_service.dart';
+
 class PlayerInvestigationData {
   final String initials;
   final Map<String, String?> savedLocations;
@@ -31,9 +34,18 @@ class GameState {
   List<PlayerInvestigationData> activePlayers = [];
 
   // Metoda do ustawiania danych z ekranu Lobby
-  void joinRoom(String username, String roomCode) {
+  void joinRoom(String username, String roomCode){
     currentUsername = username;
-    currentRoomCode = roomCode;
+    joinAndFetchRoomFromApi(roomCode,username);
+  }
+
+  void createRoom(String username) {
+    currentUsername = username;
+    createAndFetchRoomFromApi(username);
+  }
+
+  void refreshRoom(){
+    refreshDataFromApi(currentRoomCode);
   }
 
   // Metoda do resetu i startu nowej rozgrywki
@@ -56,5 +68,37 @@ class GameState {
     currentUsername = '';
     currentRoomCode = '';
     activePlayers.clear();
+  }
+
+  Future<void> refreshDataFromApi(String roomCodeAdd) async {
+    Room room = await RoomService.fetchRoom(roomCodeAdd);
+    activePlayers.clear();
+    for(var p in room.players){
+      activePlayers.add(p.toPlayerData());
+    }
+    currentRoomCode = room.roomCode;
+  }
+
+  Future<void> joinAndFetchRoomFromApi(String roomCodeAdd, String name) async {
+    Room room = await RoomService.joinRoom(roomCodeAdd, name);
+    for(var p in room.players){
+      activePlayers.add(p.toPlayerData());
+    }
+    currentRoomCode = room.roomCode;
+  }
+
+  Future<void> createAndFetchRoomFromApi(String name) async {
+    Room room = await RoomService.createRoom(name);
+    for(var p in room.players){
+      activePlayers.add(p.toPlayerData());
+    }
+    currentRoomCode = room.roomCode;
+  }
+
+  Future<void> updatePlayers() async {
+    Room room = await RoomService.fetchRoom(currentRoomCode);
+    for(var p in room.players){
+      activePlayers.add(p.toPlayerData());
+    }
   }
 }
