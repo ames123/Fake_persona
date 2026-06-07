@@ -48,7 +48,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: RoomWaitingAreaWidget.routeName,
           path: RoomWaitingAreaWidget.routePath,
-          builder: (context, params) => const RoomWaitingAreaWidget(),
+          builder: (context, params) => RoomWaitingAreaWidget(
+            roomCode:
+                params.getParam<String>('roomCode', ParamType.String) ?? '',
+            username:
+                params.getParam<String>('username', ParamType.String) ?? '',
+          ),
         ),
         FFRoute(
           name: ProfileSetupWidget.routeName,

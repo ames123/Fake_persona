@@ -12,14 +12,13 @@ class ActionCardWidget extends StatefulWidget {
     Color? bgColor,
     this.icon,
     Color? iconColor,
-    String? onTap,
+    this.onTap, // POPRAWKA: Zmiana typu na VoidCallback (funkcję)
     Color? shadowColor,
     String? subtitle,
     String? title,
   })  : bg = bg ?? 'primary',
         bgColor = bgColor ?? const Color(0x00000000),
         iconColor = iconColor ?? const Color(0x00000000),
-        onTap = onTap ?? 'navigate:RoomWaitingArea',
         shadowColor = shadowColor ?? const Color(0x00000000),
         subtitle = subtitle ?? 'Start a new investigation',
         title = title ?? 'Create Room';
@@ -28,7 +27,7 @@ class ActionCardWidget extends StatefulWidget {
   final Color bgColor;
   final Widget? icon;
   final Color iconColor;
-  final String onTap;
+  final VoidCallback? onTap; // POPRAWKA: Zmiana typu
   final Color shadowColor;
   final String subtitle;
   final String title;
@@ -55,7 +54,6 @@ class _ActionCardWidgetState extends State<ActionCardWidget> {
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
   }
 
@@ -64,9 +62,9 @@ class _ActionCardWidgetState extends State<ActionCardWidget> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        if (widget.onTap.startsWith('navigate:')) {
-          final routeName = widget.onTap.split(':').last;
-          context.pushNamed(routeName);
+        // POPRAWKA: Jeśli funkcja została przekazana, po prostu ją wywołujemy
+        if (widget.onTap != null) {
+          widget.onTap!();
         }
       },
       child: Container(
@@ -76,10 +74,7 @@ class _ActionCardWidgetState extends State<ActionCardWidget> {
             BoxShadow(
               blurRadius: 20.0,
               color: FlutterFlowTheme.of(context).primary8,
-              offset: const Offset(
-                0.0,
-                8.0,
-              ),
+              offset: const Offset(0.0, 8.0),
               spreadRadius: 0.0,
             )
           ],
@@ -118,10 +113,7 @@ class _ActionCardWidgetState extends State<ActionCardWidget> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      valueOrDefault<String>(
-                        widget.title,
-                        'Create Room',
-                      ),
+                      valueOrDefault<String>(widget.title, 'Create Room'),
                       style: FlutterFlowTheme.of(context).titleMedium.override(
                             font: GoogleFonts.urbanist(
                               fontWeight: FontWeight.bold,

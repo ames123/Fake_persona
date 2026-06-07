@@ -5,11 +5,21 @@ import '/pages/components/player_card/player_card_widget.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+// POPRAWKA: Pamiętaj, aby ta ścieżka odpowiadała lokalizacji Twojego pliku z klasą GameState
+import '/game_state.dart';
 import 'room_waiting_area_model.dart';
 export 'room_waiting_area_model.dart';
 
 class RoomWaitingAreaWidget extends StatefulWidget {
-  const RoomWaitingAreaWidget({super.key});
+  // POPRAWKA: Wymagane parametry przekazywane z ekranu LobbyEntry
+  final String roomCode;
+  final String username;
+
+  const RoomWaitingAreaWidget({
+    super.key,
+    required this.roomCode,
+    required this.username,
+  });
 
   static String routeName = 'RoomWaitingArea';
   static String routePath = '/roomWaitingArea';
@@ -32,12 +42,14 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Pobieramy listę aktywnych graczy z Twojego stanu gry
+    final activePlayers = GameState().activePlayers;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -150,7 +162,10 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'X J 9 2 B A',
+                                    // POPRAWKA: Dynamiczny kod pokoju z parametrów widżetu
+                                    widget.roomCode.isNotEmpty
+                                        ? widget.roomCode
+                                        : 'XJ92BA',
                                     style: FlutterFlowTheme.of(context)
                                         .headlineLarge
                                         .override(
@@ -177,7 +192,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                             ),
                           ),
                         ),
-                      ].divide(const SizedBox(height: 16.0)),
+                      ],
                     ),
                   ),
                   Row(
@@ -248,7 +263,8 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                               16.0, 8.0, 16.0, 8.0),
                           child: Container(
                             child: Text(
-                              '4 / 6',
+                              // Wyświetla łączną liczbę graczy (inni z API + Ty)
+                              '${activePlayers.where((p) => p.initials != widget.username).length + 1} / 6',
                               style: FlutterFlowTheme.of(context)
                                   .labelLarge
                                   .override(
@@ -292,45 +308,42 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    wrapWithModel(
-                                      model: _model.playerCardModel1,
-                                      updateCallback: () => safeSetState(() {}),
+                                    // 1. TWOJA KARTA (Zawsze na samej górze)
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 16.0),
                                       child: PlayerCardWidget(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primary,
-                                        initials: 'AR',
-                                        name: 'Alex Rivera',
+                                        color: const Color(0xFF00FFC2),
+                                        initials: widget.username.isNotEmpty
+                                            ? widget.username
+                                            : 'JA',
+                                        name: widget.username.isNotEmpty
+                                            ? '${widget.username} (Ty)'
+                                            : 'Użytkownik (Ty)',
                                       ),
                                     ),
-                                    wrapWithModel(
-                                      model: _model.playerCardModel2,
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: PlayerCardWidget(
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondary,
-                                        initials: 'JS',
-                                        name: 'Jordan Smith',
-                                      ),
-                                    ),
-                                    wrapWithModel(
-                                      model: _model.playerCardModel3,
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: PlayerCardWidget(
-                                        color: FlutterFlowTheme.of(context)
-                                            .tertiary,
-                                        initials: 'TW',
-                                        name: 'Taylor Wong',
-                                      ),
-                                    ),
-                                    wrapWithModel(
-                                      model: _model.playerCardModel4,
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: const PlayerCardWidget(
-                                        color: Color(0xFF00FFC2),
-                                        initials: 'CB',
-                                        name: 'Casey Blair (You)',
-                                      ),
-                                    ),
+
+                                    // 2. DYNAMICZNA LISTA POZOSTAŁYCH GRACZY (Zabezpieczona przed nullami)
+                                    ...activePlayers
+                                        .where((player) =>
+                                            player.initials !=
+                                                widget.username &&
+                                            player.initials != null)
+                                        .map((player) {
+                                      final playerInitials = player.initials!;
+                                      return Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 16.0),
+                                        child: PlayerCardWidget(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          initials: playerInitials,
+                                          name: playerInitials,
+                                        ),
+                                      );
+                                    }).toList(),
+
+                                    // 3. PLACEHOLDER OCZEKIWANIA
                                     Opacity(
                                       opacity: 0.6,
                                       child: Container(
@@ -407,7 +420,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                         ),
                                       ),
                                     ),
-                                  ].divide(const SizedBox(height: 16.0)),
+                                  ],
                                 ),
                               ),
                             ),
@@ -459,7 +472,8 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                                       size: 'large',
                                       fullWidth: false,
                                       loading: false,
-                                      disabled: false,
+                                      disabled: (activePlayers.length + 1) <
+                                          3, // Blokada, jeśli łączna liczba graczy < 3
                                     ),
                                   ),
                                 ),

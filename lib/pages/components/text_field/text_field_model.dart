@@ -10,6 +10,9 @@ class TextFieldModel extends FlutterFlowModel<TextFieldWidget> {
   TextEditingController? inputTextController;
   String? Function(BuildContext, String?)? inputTextControllerValidator;
 
+  // POPRAWKA: Łatwy dostęp do tekstu bezpośrednio przez model komponentu
+  String get text => inputTextController?.text ?? '';
+
   @override
   void initState(BuildContext context) {}
 

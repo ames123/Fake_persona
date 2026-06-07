@@ -5,6 +5,8 @@ import '/pages/components/button/button_widget.dart';
 import '/pages/components/text_field/text_field_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+// POPRAWKA: Upewnij się, że ta ścieżka prowadzi do Twojego pliku Game State
+import '/game_state.dart';
 import 'lobby_entry_model.dart';
 export 'lobby_entry_model.dart';
 
@@ -32,7 +34,6 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -141,7 +142,7 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                             lineHeight: 1.4,
                           ),
                     ),
-                  ].divide(const SizedBox(height: 8.0)),
+                  ],
                 ),
               ),
               Container(
@@ -181,7 +182,7 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
               ),
               Padding(
                 padding:
-                    const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 20.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -198,7 +199,29 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                           size: 32.0,
                         ),
                         iconColor: FlutterFlowTheme.of(context).onPrimary,
-                        onTap: 'navigate:RoomWaitingArea',
+
+                        // POPRAWKA: Przekazujemy czystą funkcję, karta wykona ją idealnie po kliknięciu
+                        onTap: () {
+                          final username = (_model.aliasTextFieldModel.text !=
+                                      null &&
+                                  _model.aliasTextFieldModel.text!.isNotEmpty)
+                              ? _model.aliasTextFieldModel.text!
+                              : 'Gracz';
+                          const roomCode = 'NEWROOM';
+
+                          // Zapisujemy dane do centralnego stanu gry
+                          GameState().joinRoom(username, roomCode);
+
+                          // Przechodzimy do poczekalni
+                          context.pushNamed(
+                            'RoomWaitingArea',
+                            queryParameters: {
+                              'roomCode': roomCode,
+                              'username': username,
+                            }.withoutNulls,
+                          );
+                        },
+
                         shadowColor: FlutterFlowTheme.of(context).primary25,
                         subtitle: 'Zacznij nowe śledzctwo',
                         title: 'Stwórz pokój',
@@ -279,38 +302,66 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                                 error: false,
                               ),
                             ),
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => context.pushNamed('RoomWaitingArea'),
-                              child: wrapWithModel(
-                                model: _model.buttonModel,
-                                updateCallback: () => safeSetState(() {}),
-                                child: ButtonWidget(
-                                  content: 'Dołącz do pokoju',
-                                  icon: Icon(
-                                    Icons.login_rounded,
-                                    color:
-                                        FlutterFlowTheme.of(context).onPrimary,
-                                    size: 16.0,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  final roomCode =
+                                      (_model.textFieldModel.text != null &&
+                                              _model.textFieldModel.text!
+                                                  .isNotEmpty)
+                                          ? _model.textFieldModel.text!
+                                          : 'XJ92BA';
+                                  final username =
+                                      (_model.aliasTextFieldModel.text !=
+                                                  null &&
+                                              _model.aliasTextFieldModel.text!
+                                                  .isNotEmpty)
+                                          ? _model.aliasTextFieldModel.text!
+                                          : 'Anonim';
+
+                                  // Zapis do GameState
+                                  GameState().joinRoom(username, roomCode);
+
+                                  context.pushNamed(
+                                    'RoomWaitingArea',
+                                    queryParameters: {
+                                      'roomCode': roomCode,
+                                      'username': username,
+                                    }.withoutNulls,
+                                  );
+                                },
+                                child: wrapWithModel(
+                                  model: _model.buttonModel,
+                                  updateCallback: () => safeSetState(() {}),
+                                  child: ButtonWidget(
+                                    content: 'Dołącz do pokoju',
+                                    icon: Icon(
+                                      Icons.login_rounded,
+                                      color: FlutterFlowTheme.of(context)
+                                          .onPrimary,
+                                      size: 16.0,
+                                    ),
+                                    iconPresent: true,
+                                    iconEndPresent: false,
+                                    variant: 'primary',
+                                    size: 'large',
+                                    fullWidth: true,
+                                    loading: false,
+                                    disabled: false,
                                   ),
-                                  iconPresent: true,
-                                  iconEndPresent: false,
-                                  variant: 'primary',
-                                  size: 'large',
-                                  fullWidth: true,
-                                  loading: false,
-                                  disabled: false,
                                 ),
                               ),
                             ),
-                          ].divide(const SizedBox(height: 16.0)),
+                          ],
                         ),
-                      ].divide(const SizedBox(height: 24.0)),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ].divide(const SizedBox(height: 32.0)),
+            ],
           ),
         ),
       ),

@@ -12,18 +12,29 @@ class PlayerInvestigationData {
 }
 
 class GameState {
-  // POPRAWKA: Jawna inicjalizacja statycznej instancji na starcie aplikacji
+  // Singleton - gwarantuje, że w całej aplikacji istnieje tylko jedna instancja tej klasy
   static final GameState _instance = GameState._internal();
 
-  // Konstruktor fabryczny zawsze zwraca tę samą, poprawnie zainicjalizowaną instancję
   factory GameState() {
     return _instance;
   }
 
   GameState._internal();
 
-  // Dynamiczna lista graczy
+  // ==========================================
+  // DANE LOKALNEGO GRACZA (Zapisywane w Lobby)
+  // ==========================================
+  String currentUsername = '';
+  String currentRoomCode = '';
+
+  // Dynamiczna lista pozostałych graczy w pokoju (pobrana z API / WebSockets)
   List<PlayerInvestigationData> activePlayers = [];
+
+  // Metoda do ustawiania danych z ekranu Lobby
+  void joinRoom(String username, String roomCode) {
+    currentUsername = username;
+    currentRoomCode = roomCode;
+  }
 
   // Metoda do resetu i startu nowej rozgrywki
   void startNewGame(List<String> dynamicInitials) {
@@ -42,9 +53,8 @@ class GameState {
   }
 
   void resetNewGame() {
-    for (var player in activePlayers) {
-      player.savedLocations.updateAll((key, value) => null);
-      player.savedActions.updateAll((key, value) => null);
-    }
+    currentUsername = '';
+    currentRoomCode = '';
+    activePlayers.clear();
   }
 }

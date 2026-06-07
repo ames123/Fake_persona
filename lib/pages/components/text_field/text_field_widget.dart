@@ -70,12 +70,16 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
 
     _model.inputTextController ??= TextEditingController(text: widget.value);
     _model.inputFocusNode ??= FocusNode();
+
+    // POPRAWKA: Każda zmiana tekstu wywołuje update nadrzędnego stanu widżetu
+    _model.inputTextController!.addListener(() {
+      _model.onUpdate();
+    });
   }
 
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
   }
 
@@ -276,35 +280,26 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                           widget.hint,
                           'e.g. XJ92',
                         ),
-                        hintStyle: FlutterFlowTheme.of(context)
-                            .bodyMedium
-                            .override(
-                              font: GoogleFonts.urbanist(
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .fontStyle,
-                              ),
-                              color: () {
-                                if (widget.variant == 'filled') {
-                                  return FlutterFlowTheme.of(context).accent3;
-                                } else if (widget.variant == 'ghost') {
-                                  return FlutterFlowTheme.of(context).accent3;
-                                } else {
-                                  return FlutterFlowTheme.of(context).accent3;
-                                }
-                              }(),
-                              letterSpacing: 0.0,
-                              fontWeight: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .fontStyle,
-                              lineHeight: 1.5,
-                            ),
+                        hintStyle:
+                            FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.urbanist(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  color: FlutterFlowTheme.of(context).accent3,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                  lineHeight: 1.5,
+                                ),
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
                         errorBorder: InputBorder.none,
@@ -319,15 +314,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                                   .bodyMedium
                                   .fontStyle,
                             ),
-                            color: () {
-                              if (widget.variant == 'filled') {
-                                return FlutterFlowTheme.of(context).primaryText;
-                              } else if (widget.variant == 'ghost') {
-                                return FlutterFlowTheme.of(context).primaryText;
-                              } else {
-                                return FlutterFlowTheme.of(context).primaryText;
-                              }
-                            }(),
+                            color: FlutterFlowTheme.of(context).primaryText,
                             letterSpacing: 0.0,
                             fontWeight: FlutterFlowTheme.of(context)
                                 .bodyMedium
