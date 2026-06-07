@@ -26,58 +26,57 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final String currentActivePeriod = 'RANO';
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ScheduleOrganizerModel());
 
-    // Pobieramy instancję zapisanego profilu i harmonogramu
     final profile = ProfileState();
     final routine = profile.savedUserRoutine;
 
-    // POPRAWKA: Dynamiczne mapowanie ułożonych przez użytkownika zadań z ProfileState
-    // Jeśli z jakiegoś powodu mapa jest pusta (np. uruchomienie testowe od tego ekranu),
-    // aplikacja bezpiecznie pobierze wartości domyślne.
+    // POPRAWKA: Pole 'active' sprawdza teraz logicznie, czy klucz pory dnia
+    // zgadza się z wartością zapisanej powyżej zmiennej currentActivePeriod
     _timeSlots = [
       {
         'id': 'ts1',
         'period': 'Rano',
         'task': routine['RANO'] ?? 'Czas wolny',
         'icon': _getIconForTask(routine['RANO'] ?? 'Czas wolny'),
-        'active': true, // Załóżmy na start, że Rano jest aktywne
+        'active': currentActivePeriod == 'RANO',
       },
       {
         'id': 'ts2',
         'period': 'Południe',
         'task': routine['POŁUDNIE'] ?? 'Sport',
         'icon': _getIconForTask(routine['POŁUDNIE'] ?? 'Sport'),
-        'active': false,
+        'active': currentActivePeriod == 'POŁUDNIE',
       },
       {
         'id': 'ts3',
         'period': 'Popołudnie',
         'task': routine['POPOŁUDNIE'] ?? 'Jedzenie',
         'icon': _getIconForTask(routine['POPOŁUDNIE'] ?? 'Jedzenie'),
-        'active': false,
+        'active': currentActivePeriod == 'POPOŁUDNIE',
       },
       {
         'id': 'ts4',
         'period': 'Wieczór',
         'task': routine['WIECZÓR'] ?? 'Oglądanie',
         'icon': _getIconForTask(routine['WIECZÓR'] ?? 'Oglądanie'),
-        'active': false,
+        'active': currentActivePeriod == 'WIECZÓR',
       },
       {
         'id': 'ts5',
         'period': 'Noc',
         'task': routine['NOC'] ?? 'Czytanie',
         'icon': _getIconForTask(routine['NOC'] ?? 'Czytanie'),
-        'active': false,
+        'active': currentActivePeriod == 'NOC',
       },
     ];
   }
 
-  // Funkcja pomocnicza dopasowująca ikonę do czynności pobranej z ProfileState
   IconData _getIconForTask(String task) {
     switch (task) {
       case 'Czytanie':
@@ -135,7 +134,6 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Pobieramy dynamiczną nazwę aktualnej roli gracza
     final currentRole = ProfileState().currentRole;
 
     return GestureDetector(
@@ -175,11 +173,9 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment
-                            .start, // Zmiana na start dla równego układu kolumn
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            // POPRAWKA: Doklejamy dynamiczną nazwę roli obok stałego tytułu
                             'Kalendarz dnia ($currentRole)',
                             style: FlutterFlowTheme.of(context)
                                 .titleLarge
