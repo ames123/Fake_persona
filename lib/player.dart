@@ -1,9 +1,10 @@
 import 'package:schedule_sleuth/game_state.dart';
+import 'package:schedule_sleuth/role.dart';
 
 class Player {
   int id;
   String displayName;
-  String? role;
+  Role? role;
   String? freeTime;
   String? action1;
   String? action2;
@@ -35,7 +36,7 @@ class Player {
     return Player(
       id: json['id'],
       displayName: json['displayName'],
-      role: json['role'],
+      role: Role.fromJson(json['role']),
       freeTime: json['freeTime'],
       action1: json['action1'],
       action2: json['action2'],

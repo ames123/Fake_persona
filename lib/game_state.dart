@@ -24,6 +24,8 @@ class GameState {
 
   GameState._internal();
 
+  String state = '';
+
   // ==========================================
   // DANE LOKALNEGO GRACZA (Zapisywane w Lobby)
   // ==========================================
@@ -77,6 +79,7 @@ class GameState {
       activePlayers.add(p.toPlayerData());
     }
     currentRoomCode = room.roomCode;
+    state = room.gamestate;
   }
 
   Future<void> joinAndFetchRoomFromApi(String roomCodeAdd, String name) async {
@@ -85,6 +88,7 @@ class GameState {
       activePlayers.add(p.toPlayerData());
     }
     currentRoomCode = room.roomCode;
+    state = room.gamestate;
   }
 
   Future<void> createAndFetchRoomFromApi(String name) async {
@@ -93,6 +97,7 @@ class GameState {
       activePlayers.add(p.toPlayerData());
     }
     currentRoomCode = room.roomCode;
+    state = room.gamestate;
   }
 
   Future<void> updatePlayers() async {
@@ -100,5 +105,10 @@ class GameState {
     for(var p in room.players){
       activePlayers.add(p.toPlayerData());
     }
+    state = room.gamestate;
+  }
+
+  void setState(String gamestate) {
+    state = gamestate;
   }
 }

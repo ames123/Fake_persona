@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:schedule_sleuth/services/action_service.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/components/button/button_widget.dart';
@@ -42,7 +44,10 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
 
     timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       GameState().refreshRoom();
-      setState(() {});
+      setState(() {
+      if(GameState().state != "JOIN") {
+        context.goNamed('ProfileSetup');
+      }});
     });
   }
 
@@ -476,7 +481,10 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 GestureDetector(
-                                  onTap: () => context.goNamed('ProfileSetup'),
+                                  onTap: () { 
+                                    ActionService.startGame(GameState().currentRoomCode);
+                                    context.goNamed('ProfileSetup');
+                                  },
                                   child: wrapWithModel(
                                     model: _model.buttonModel1,
                                     updateCallback: () => safeSetState(() {}),
