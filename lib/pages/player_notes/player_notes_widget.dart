@@ -117,6 +117,7 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
                         // POPRAWKA: Przeniesiony i wyrównany do lewej strony licznik czasu
                         Row(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.timer_rounded,
@@ -137,6 +138,40 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
                                   ),
                                 );
                               },
+                            ),
+                            const SizedBox(width: 12.0),
+                            ElevatedButton(
+                              onPressed: () {
+                                GameState().forceResetTimer();
+                                context.goNamed(
+                                  CurrentTaskViewWidget.routeName,
+                                  extra: {
+                                    kTransitionInfoKey: const TransitionInfo(
+                                      hasTransition: true,
+                                      transitionType:
+                                          PageTransitionType.leftToRight,
+                                      duration: Duration(milliseconds: 300),
+                                    ),
+                                  },
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 10.0,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                              ),
+                              child: const Text(
+                                'Skip Time',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ],
                         ),
