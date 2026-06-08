@@ -34,15 +34,24 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
 
   late CurrentTaskViewModel _model;
 
+  final List<String> timeLabels = [
+    'RANO',
+    'POŁUDNIE',
+    'POPOŁUDNIE',
+    'WIECZÓR',
+    'NOC',
+  ];
   // =========================================================================
   // BACKEND: Zmienna globalna kontrolująca aktualną fazę gry (Pora dnia)
   // Możliwe wartości zgodne z kluczami bazy: 'RANO', 'POŁUDNIE', 'POPOŁUDNIE', 'WIECZÓR', 'NOC'
   // =========================================================================
-  final String currentActivePeriod = 'RANO';
+  String currentActivePeriod = 'RANO';
 
   @override
   void initState() {
     super.initState();
+    GameState().refreshTimeDataFromApi();
+    currentActivePeriod =  timeLabels[GameState().currentTimePeriod];
     _model = createModel(context, () => CurrentTaskViewModel());
 
     _resetController = AnimationController(

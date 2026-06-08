@@ -206,6 +206,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                 const SizedBox(width: 12.0),
                                 ElevatedButton(
                                   onPressed: () {
+                                    _profileState.sendEndHourToApi(GameState().currentRoomCode,GameState().currentUsername);
                                     GameState().forceResetTimer();
                                     context.goNamed(
                                       CurrentTaskViewWidget.routeName,

@@ -34,6 +34,8 @@ class GameState {
   }
 
   String state = '';
+  int currentTimePeriod = 0;
+  int currentDay = 0;
 
   // ==========================================
   // DANE LOKALNEGO GRACZA (Zapisywane w Lobby)
@@ -83,6 +85,7 @@ class GameState {
         stopTimer();
         _notifyTimeChanged();
         if (_currentContext != null && _currentContext!.mounted) {
+          //timer expiry
           _currentContext!.goNamed('CurrentTaskView');
         }
       }
@@ -175,6 +178,12 @@ class GameState {
     }
     currentRoomCode = room.roomCode;
     state = room.gamestate;
+  }
+
+  Future<void> refreshTimeDataFromApi() async {
+    Room room = await RoomService.fetchRoom(currentRoomCode);
+    currentDay = room.dayProgression;
+    currentTimePeriod = room.timeProgression;
   }
 
   Future<void> joinAndFetchRoomFromApi(String roomCodeAdd, String name) async {
