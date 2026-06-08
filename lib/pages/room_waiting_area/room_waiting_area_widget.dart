@@ -54,7 +54,7 @@ class _RoomWaitingAreaWidgetState extends State<RoomWaitingAreaWidget> {
   void initTimer() {
     if (timer != null && timer!.isActive) return;
 
-    timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       GameState().refreshRoom();
       setState(() {
       if(GameState().state != "JOIN") {

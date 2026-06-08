@@ -1,3 +1,5 @@
+import 'package:schedule_sleuth/game_state.dart';
+
 import '../current_task_view/current_task_view_widget.dart'
     show CurrentTaskViewWidget;
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -65,8 +67,12 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileSetupModel());
-    _slots = ProfileState().rollNewProfile();
+    getRole();
     _prepareAlternativeTasks();
+  }
+
+  Future<void> getRole() async{
+    _slots = await ProfileState().getProfileFromApi(GameState().currentRoomCode, GameState().currentUsername);
   }
 
   // Losowanie 3 unikalnych alternatyw na starcie ekranu

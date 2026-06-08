@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:schedule_sleuth/room.dart';
+import 'package:schedule_sleuth/services/room_service.dart';
 
 class SlotData {
   final int id;
@@ -138,6 +140,16 @@ class ProfileState {
     final roles = staticRoutines.keys.toList();
     final randomRole = roles[Random().nextInt(roles.length)];
     currentRole = randomRole;
+    return getDefaultSlotsForCurrentRole();
+  }
+
+  Future<List<SlotData>> getProfileFromApi(String roomCode, String username) async {
+    Room fetchedRoom = await RoomService.fetchRoom(roomCode);
+    for(var p in fetchedRoom.players){
+      if (p.displayName == username) {
+        currentRole = p.role!.name;
+      }
+    }
     return getDefaultSlotsForCurrentRole();
   }
 
