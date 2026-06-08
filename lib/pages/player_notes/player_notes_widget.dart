@@ -40,17 +40,29 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
     super.initState();
     _model = createModel(context, () => PlayerNotesModel());
 
+    // Informujemy globalny stan, że gracz patrzy teraz na ten ekran
+    _gameState.updateContext(context);
+
     // TEST/ZABEZPIECZENIE: Jeśli lista jest pusta, symulujemy start gry dla 3 mobilnych graczy
     if (_gameState.activePlayers.isEmpty) {
       _gameState.startNewGame(['KS', 'JS', 'AZ']);
     }
 
-    // Podpinamy system powiadomień timera do odświeżania tego widoku co sekundę
-    _gameState.onTimeChanged = () {
-      if (mounted) {
-        safeSetState(() {});
-      }
-    };
+//Uruchamiamy timer (funkcja sama sprawdzi, czy już bije, więc niczego nie zepsuje)
+    _gameState.startTimer(context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameState.updateContext(context);
+    _gameState.onTimeChanged = _updateTimerText;
+  }
+
+  void _updateTimerText() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -112,14 +124,19 @@ class _PlayerNotesWidgetState extends State<PlayerNotesWidget> {
                               size: 16.0,
                             ),
                             const SizedBox(width: 4.0),
-                            Text(
-                              _gameState.formattedTime,
-                              style: theme.labelLarge.copyWith(
-                                color: theme.error,
-                                fontFamily:
-                                    GoogleFonts.spaceGrotesk().fontFamily,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            ValueListenableBuilder<String>(
+                              valueListenable: GameState().timeNotifier,
+                              builder: (context, value, child) {
+                                return Text(
+                                  value,
+                                  style: theme.labelLarge.copyWith(
+                                    color: theme.error,
+                                    fontFamily:
+                                        GoogleFonts.spaceGrotesk().fontFamily,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),

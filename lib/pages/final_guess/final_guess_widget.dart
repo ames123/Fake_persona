@@ -23,7 +23,7 @@ class FinalGuessWidget extends StatefulWidget {
 
 class _FinalGuessWidgetState extends State<FinalGuessWidget> {
   late FinalGuessModel _model;
-
+  final GameState _gameState = GameState();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Lista kolorów dla awatarów graczy (wykorzystywana rotacyjnie)
@@ -40,19 +40,26 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => FinalGuessModel());
+    _gameState.updateContext(context);
+  }
 
-    // POPRAWKA: Podpinamy system powiadomień timera do odświeżania tego widoku co sekundę
-    GameState().onTimeChanged = () {
-      if (mounted) {
-        safeSetState(() {});
-      }
-    };
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameState.updateContext(context);
+    _gameState.onTimeChanged = _updateTimerText;
+  }
+
+  void _updateTimerText() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
     // POPRAWKA: Bezpiecznie odpinamy timer przy opuszczaniu widoku
-    GameState().onTimeChanged = null;
+    _gameState.onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
@@ -137,21 +144,25 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                 color: theme.primaryText,
                                 size: 20.0,
                               ),
-                              Text(
-                                // POPRAWKA: Podmieniono statyczny tekst na dynamiczny czas z GameState
-                                GameState().formattedTime,
-                                style: theme.bodyMedium.override(
-                                  font: GoogleFonts.urbanist(
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: theme.bodyMedium.fontStyle,
-                                  ),
-                                  color: theme.primaryText,
-                                  fontSize: 24.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.bold,
-                                  fontStyle: theme.bodyMedium.fontStyle,
-                                  lineHeight: 1.5,
-                                ),
+                              ValueListenableBuilder<String>(
+                                valueListenable: GameState().timeNotifier,
+                                builder: (context, value, child) {
+                                  return Text(
+                                    value,
+                                    style: theme.bodyMedium.override(
+                                      font: GoogleFonts.urbanist(
+                                        fontWeight: FontWeight.bold,
+                                        fontStyle: theme.bodyMedium.fontStyle,
+                                      ),
+                                      color: theme.primaryText,
+                                      fontSize: 24.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: theme.bodyMedium.fontStyle,
+                                      lineHeight: 1.5,
+                                    ),
+                                  );
+                                },
                               ),
                             ].divide(const SizedBox(width: 8.0)),
                           ),

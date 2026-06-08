@@ -28,19 +28,18 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final GameState _gameState = GameState();
+
   final String currentActivePeriod = 'RANO';
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ScheduleOrganizerModel());
+    _gameState.updateContext(context);
 
-    // POPRAWKA: Podpinamy system powiadomień timera do odświeżania tego widoku
-    GameState().onTimeChanged = () {
-      if (mounted) {
-        safeSetState(() {});
-      }
-    };
+//Uruchamiamy timer (funkcja sama sprawdzi, czy już bije, więc niczego nie zepsuje)
+    _gameState.startTimer(context);
 
     final profile = ProfileState();
     final routine = profile.savedUserRoutine;
@@ -82,6 +81,19 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
         'active': currentActivePeriod == 'NOC',
       },
     ];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameState.updateContext(context);
+    _gameState.onTimeChanged = _updateTimerText;
+  }
+
+  void _updateTimerText() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   IconData _getIconForTask(String task) {
@@ -135,8 +147,7 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
 
   @override
   void dispose() {
-    // POPRAWKA: Bezpiecznie odpinamy timer przy zamykaniu okna
-    GameState().onTimeChanged = null;
+    _gameState.onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
@@ -214,26 +225,33 @@ class _ScheduleOrganizerWidgetState extends State<ScheduleOrganizerWidget> {
                                 color: FlutterFlowTheme.of(context).error,
                                 size: 16.0,
                               ),
-                              Text(
-                                // POPRAWKA: Pobieramy aktualny czas z centralnego Timera
-                                GameState().formattedTime,
-                                style: FlutterFlowTheme.of(context)
-                                    .labelLarge
-                                    .override(
-                                      font: GoogleFonts.spaceGrotesk(
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .labelLarge
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context).error,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .labelLarge
-                                          .fontStyle,
-                                      lineHeight: 1.2,
-                                    ),
+                              ValueListenableBuilder<String>(
+                                valueListenable: GameState().timeNotifier,
+                                builder: (context, value, child) {
+                                  return Text(
+                                    value,
+                                    style: FlutterFlowTheme.of(context)
+                                        .labelLarge
+                                        .override(
+                                          font: GoogleFonts.spaceGrotesk(
+                                            fontWeight: FontWeight.bold,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .labelLarge
+                                                    .fontStyle,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .error,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .labelLarge
+                                                  .fontStyle,
+                                          lineHeight: 1.2,
+                                        ),
+                                  );
+                                },
                               ),
                             ].divide(const SizedBox(width: 4.0)),
                           ),

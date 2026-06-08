@@ -30,6 +30,8 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
 
   final ProfileState _profileState = ProfileState();
 
+  final GameState _gameState = GameState();
+
   String _activeRoleName = 'Pisarz';
 
   final Map<String, String> _profileGenitives = {
@@ -84,19 +86,29 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
     _model = createModel(context, () => PlayerInvestigationModel());
 
     // POPRAWKA: Przekazujemy context, aby system wiedział gdzie wykonać automatyczne przekierowanie
-    GameState().startTimer(context);
+    _gameState.updateContext(context);
 
-    GameState().onTimeChanged = () {
-      if (mounted) {
-        safeSetState(() {});
-      }
-    };
+//Uruchamiamy timer (funkcja sama sprawdzi, czy już bije, więc niczego nie zepsuje)
+    _gameState.startTimer(context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameState.updateContext(context);
+    _gameState.onTimeChanged = _updateTimerText;
+  }
+
+  void _updateTimerText() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
     // POPRAWKA: Odpinamy callback, aby nie rzucać setState na martwym widżecie
-    GameState().onTimeChanged = null;
+    _gameState.onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
@@ -167,15 +179,19 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                               children: [
                                 Icon(Icons.timer_rounded,
                                     color: theme.error, size: 16.0),
-                                Text(
-                                  // POPRAWKA: Pobieramy sformatowany czas MM:SS prosto z GameState()
-                                  GameState().formattedTime,
-                                  style: theme.labelLarge.override(
-                                    fontFamily:
-                                        GoogleFonts.spaceGrotesk().fontFamily,
-                                    color: theme.error,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                ValueListenableBuilder<String>(
+                                  valueListenable: GameState().timeNotifier,
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      value,
+                                      style: theme.labelLarge.override(
+                                        fontFamily: GoogleFonts.spaceGrotesk()
+                                            .fontFamily,
+                                        color: theme.error,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ].divide(const SizedBox(width: 4.0)),
                             ),

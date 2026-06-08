@@ -23,7 +23,12 @@ class GameState {
     return _instance;
   }
 
-  GameState._internal();
+  GameState._internal() {
+    // Ustawiamy początkową wartość notyfikatora czasu zgodnie ze stanem
+    try {
+      timeNotifier.value = formattedTime;
+    } catch (_) {}
+  }
 
   // ==========================================
   // DANE LOKALNEGO GRACZA (Zapisywane w Lobby)
@@ -37,11 +42,28 @@ class GameState {
   // ==========================================
   // SYSTEM GLOBALNEGO TIMERA
   // ==========================================
-  int remainingSeconds = 300; // Domyślnie 5 minut
+  int remainingSeconds = 10; // Domyślnie 5 minut
+  int roundSeconds = 10;
   Timer? _gameTimer;
-
   // Rejestr nasłuchiwania dla bezpiecznego odświeżania UI (safeSetState)
   void Function()? onTimeChanged;
+
+  // ValueNotifier z sformatowanym czasem — łatwiejsze nasłuchiwanie w wielu widokach
+  final ValueNotifier<String> timeNotifier = ValueNotifier('00:00');
+// Referencja do aktualnego BuildContext widocznego ekranu
+  BuildContext? _currentContext;
+
+  void updateContext(BuildContext context) {
+    _currentContext = context;
+  }
+
+  void _notifyTimeChanged() {
+    final ft = formattedTime;
+    try {
+      timeNotifier.value = ft;
+    } catch (_) {}
+    onTimeChanged?.call();
+  }
 
   // Funkcja uruchamiająca odliczanie
   void startTimer(BuildContext context) {
@@ -51,12 +73,12 @@ class GameState {
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingSeconds > 0) {
         remainingSeconds--;
-        onTimeChanged?.call(); // Powiadomienie widżetu o zmianie sekundy
+        _notifyTimeChanged(); // Powiadomienie widżetu o zmianie sekundy
       } else {
         stopTimer();
-        // POPRAWKA: Zegar osiąga 0 -> Automatyczne przerzucenie na ekran zadań
-        if (context.mounted) {
-          context.goNamed('CurrentTaskView');
+        _notifyTimeChanged();
+        if (_currentContext != null && _currentContext!.mounted) {
+          _currentContext!.goNamed('CurrentTaskView');
         }
       }
     });
@@ -65,8 +87,8 @@ class GameState {
   // POPRAWKA: Wymuszony, czysty reset timera przy przejściu z zadań do śledztwa
   void forceResetTimer() {
     stopTimer();
-    remainingSeconds = 300; // Powrót do pełnych 5 minut
-    onTimeChanged?.call();
+    remainingSeconds = roundSeconds; // Powrót do pełnych 5 minut
+    _notifyTimeChanged();
   }
 
   // Funkcja zatrzymująca odliczanie
@@ -109,7 +131,7 @@ class GameState {
       );
     }
     stopTimer();
-    remainingSeconds = 300;
+    remainingSeconds = roundSeconds;
   }
 
   // Metoda do pełnego czyszczenia stanu tury i pokoju
@@ -118,6 +140,6 @@ class GameState {
     currentRoomCode = '';
     activePlayers.clear();
     stopTimer();
-    remainingSeconds = 300;
+    remainingSeconds = roundSeconds;
   }
 }
