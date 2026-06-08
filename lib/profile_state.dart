@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:schedule_sleuth/room.dart';
+import 'package:schedule_sleuth/services/action_service.dart';
 import 'package:schedule_sleuth/services/room_service.dart';
 
 class SlotData {
@@ -151,6 +152,12 @@ class ProfileState {
       }
     }
     return getDefaultSlotsForCurrentRole();
+  }
+
+  Future<void> sendRoutineToApi(String roomCode, String username) async{
+    await ActionService.finishOrdering(roomCode, username, 
+      savedUserRoutine['RANO']!, savedUserRoutine['POŁUDNIE']!, savedUserRoutine['POPOŁUDNIE']!, 
+      savedUserRoutine['WIECZÓR']!, savedUserRoutine['NOC']!);
   }
 
   List<SlotData> getDefaultSlotsForCurrentRole() {

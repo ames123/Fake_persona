@@ -57,4 +57,19 @@ class RoomService {
     }
     return room;
   }
+
+  static Future<String> fetchGamestate(String roomCode) async{
+    final uri = Uri.parse('$baseUrl/rooms/$roomCode/gamestate');
+    final resp = await http.get(uri);
+    if(resp.statusCode == 200){
+      try {
+        final data = jsonDecode(resp.body) as String;
+        return data;
+      } catch (e) {
+        print(e);
+        return "Err";
+      }
+    }
+    return "Err";
+  }
 }

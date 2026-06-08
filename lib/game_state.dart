@@ -171,6 +171,10 @@ class GameState {
     state = room.gamestate;
   }
 
+  Future<void> refreshGamestate() async {
+    state = await RoomService.fetchGamestate(currentRoomCode);
+  }
+
   void setState(String gamestate) {
     state = gamestate;
   }

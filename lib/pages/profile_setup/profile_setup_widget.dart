@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:schedule_sleuth/game_state.dart';
 
 import '../current_task_view/current_task_view_widget.dart'
@@ -63,12 +65,47 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
     'Czas wolny': Icons.accessibility_new_rounded,
   };
 
+  bool submitted = false;
+
+  Timer? timer;
+
+  void initTimer() {
+    if (timer != null && timer!.isActive) return;
+
+    timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      print("e");
+      GameState().refreshGamestate();
+      setState(() {
+        if(GameState().state != 'ORDERING'){
+          context.goNamed(
+                                CurrentTaskViewWidget.routeName,
+                                extra: {
+                                  kTransitionInfoKey: const TransitionInfo(
+                                    hasTransition: true,
+                                    transitionType:
+                                        PageTransitionType.rightToLeft,
+                                    duration: Duration(milliseconds: 300),
+                                  ),
+                                },
+                              );
+        }
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileSetupModel());
     getRole();
+    initTimer();
     _prepareAlternativeTasks();
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   Future<void> getRole() async{
@@ -498,18 +535,8 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                           ? null
                           : () {
                               ProfileState().saveFinalRoutine(_slots);
-
-                              context.goNamed(
-                                CurrentTaskViewWidget.routeName,
-                                extra: {
-                                  kTransitionInfoKey: const TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType:
-                                        PageTransitionType.rightToLeft,
-                                    duration: Duration(milliseconds: 300),
-                                  ),
-                                },
-                              );
+                              ProfileState().sendRoutineToApi(GameState().currentRoomCode, GameState().currentUsername);
+                              submitted = true;
                             },
                       child: wrapWithModel(
                         model: _model.buttonModel,
@@ -527,7 +554,7 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
                           size: 'large',
                           fullWidth: true,
                           loading: false,
-                          disabled: hasFreeTimeLeft,
+                          disabled: hasFreeTimeLeft || submitted,
                         ),
                       ),
                     ),
