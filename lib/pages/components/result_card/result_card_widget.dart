@@ -10,8 +10,8 @@ class ResultCardWidget extends StatefulWidget {
     super.key,
     String? initials,
     String? name,
-    String? points,
-    String? role,
+    String? points, // Pozostawione dla kompatybilności wstecznej
+    String? role, // Pozostawione dla kompatybilności wstecznej
     bool? isWinner,
   })  : initials = initials ?? 'AR',
         name = name ?? 'Alex Rivera',
@@ -47,7 +47,6 @@ class _ResultCardWidgetState extends State<ResultCardWidget> {
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
   }
 
@@ -62,7 +61,7 @@ class _ResultCardWidgetState extends State<ResultCardWidget> {
           color: widget.isWinner
               ? FlutterFlowTheme.of(context).primary
               : FlutterFlowTheme.of(context).alternate,
-          width: widget.isWinner ? 1.0 : 1.0,
+          width: 1.0,
         ),
       ),
       child: Padding(
@@ -112,9 +111,6 @@ class _ResultCardWidgetState extends State<ResultCardWidget> {
                               fontSize: 22.8,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.w600,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .labelMedium
-                                  .fontStyle,
                               lineHeight: 1.2,
                             ),
                         overflow: TextOverflow.clip,
@@ -155,7 +151,8 @@ class _ResultCardWidgetState extends State<ResultCardWidget> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment
+                      .start, // Zmieniono na start dla lepszego wyrównania tekstu
                   children: [
                     Text(
                       valueOrDefault<String>(
@@ -172,91 +169,15 @@ class _ResultCardWidgetState extends State<ResultCardWidget> {
                             color: FlutterFlowTheme.of(context).primaryText,
                             letterSpacing: 0.0,
                             fontWeight: FontWeight.bold,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .titleMedium
-                                .fontStyle,
                             lineHeight: 1.3,
                           ),
                     ),
-                    Text(
-                      valueOrDefault<String>(
-                        widget.role,
-                        'Lead Detective',
-                      ),
-                      style: FlutterFlowTheme.of(context).labelSmall.override(
-                            font: GoogleFonts.spaceGrotesk(
-                              fontWeight: FlutterFlowTheme.of(context)
-                                  .labelSmall
-                                  .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .labelSmall
-                                  .fontStyle,
-                            ),
-                            color: FlutterFlowTheme.of(context).secondaryText,
-                            letterSpacing: 0.0,
-                            fontWeight: FlutterFlowTheme.of(context)
-                                .labelSmall
-                                .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .labelSmall
-                                .fontStyle,
-                            lineHeight: 1.2,
-                          ),
-                    ),
-                  ].divide(const SizedBox(height: 4.0)),
+                    // USUNIĘTO widget.role Text
+                  ],
                 ),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    valueOrDefault<String>(
-                      widget.points,
-                      '1,250',
-                    ),
-                    style: FlutterFlowTheme.of(context).titleLarge.override(
-                          font: GoogleFonts.urbanist(
-                            fontWeight: FontWeight.w900,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .titleLarge
-                                .fontStyle,
-                          ),
-                          color: widget.isWinner
-                              ? FlutterFlowTheme.of(context).tertiary
-                              : FlutterFlowTheme.of(context).primaryText,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w900,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).titleLarge.fontStyle,
-                          lineHeight: 1.3,
-                        ),
-                  ),
-                  Text(
-                    'PTS',
-                    style: FlutterFlowTheme.of(context).labelSmall.override(
-                          font: GoogleFonts.spaceGrotesk(
-                            fontWeight: FlutterFlowTheme.of(context)
-                                .labelSmall
-                                .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .labelSmall
-                                .fontStyle,
-                          ),
-                          color: FlutterFlowTheme.of(context).secondaryText,
-                          letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
-                              .labelSmall
-                              .fontWeight,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).labelSmall.fontStyle,
-                          lineHeight: 1.2,
-                        ),
-                  ),
-                ].divide(const SizedBox(height: 4.0)),
-              ),
-            ].divide(const SizedBox(width: 16.0)),
+              // USUNIĘTO całą kolumnę z widget.points oraz napisem 'PTS'
+            ],
           ),
         ),
       ),

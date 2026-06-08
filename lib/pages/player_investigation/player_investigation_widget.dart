@@ -6,7 +6,6 @@ import '/pages/components/profile_tab/profile_tab_widget.dart';
 import '/pages/components/schedule_item/schedule_item_widget.dart';
 import '/pages/components/guess_row/guess_row_widget.dart';
 import '/profile_state.dart';
-// POPRAWKA: Importujemy stan gry z listą aktywnych graczy i timerem
 import '/game_state.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -29,8 +28,12 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final ProfileState _profileState = ProfileState();
+  final GameState _gameState = GameState();
 
   String _activeRoleName = 'Pisarz';
+
+  // NOWOŚĆ: Stan przełącznika harmonogramów (false = główny, true = zmieniony)
+  bool _showModifiedSchedule = false;
 
   final Map<String, String> _profileGenitives = {
     'Pisarz': 'pisarza',
@@ -83,26 +86,34 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
     super.initState();
     _model = createModel(context, () => PlayerInvestigationModel());
 
-    // POPRAWKA: Przekazujemy context, aby system wiedział gdzie wykonać automatyczne przekierowanie
-    GameState().startTimer(context);
+    _gameState.updateContext(context);
+    _gameState.startTimer(context);
+  }
 
-    GameState().onTimeChanged = () {
-      if (mounted) {
-        safeSetState(() {});
-      }
-    };
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameState.updateContext(context);
+    _gameState.onTimeChanged = _updateTimerText;
+  }
+
+  void _updateTimerText() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
-    // POPRAWKA: Odpinamy callback, aby nie rzucać setState na martwym widżecie
-    GameState().onTimeChanged = null;
+    _gameState.onTimeChanged = null;
     _model.dispose();
     super.dispose();
   }
 
   IconData _getIconForActivity(String? activity, IconData defaultIcon) {
-    if (activity == null || !_activityIcons.containsKey(activity)) {
+    if (activity == null ||
+        activity == '???' ||
+        !_activityIcons.containsKey(activity)) {
       return defaultIcon;
     }
     return _activityIcons[activity]!;
@@ -112,8 +123,18 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
 
-    final Map<String, String> currentRoutine =
+    // 1. Pobieranie danych Głównego Harmonogramu
+    final Map<String, String> mainRoutine =
         _profileState.staticRoutines[_activeRoleName] ?? {};
+
+    // 2. NOWOŚĆ: Pobieranie Zmienionego Harmonogramu (Tymczasowo rezerwa z "???", docelowo backend)
+    // Jeśli w profileState lub gameState stworzycie mapę modifiedRoutines, podmień poniższy pusty słownik
+    final Map<String, String> modifiedRoutine = {};
+
+    // Wybieramy odpowiedni zestaw danych na podstawie stanu przełącznika
+    final Map<String, String> activeRoutine =
+        _showModifiedSchedule ? modifiedRoutine : mainRoutine;
+
     final String genitiveName =
         _profileGenitives[_activeRoleName] ?? _activeRoleName.toLowerCase();
 
@@ -164,22 +185,62 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                             ),
                             Row(
                               mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Icon(Icons.timer_rounded,
                                     color: theme.error, size: 16.0),
-                                Text(
-                                  // POPRAWKA: Pobieramy sformatowany czas MM:SS prosto z GameState()
-                                  GameState().formattedTime,
-                                  style: theme.labelLarge.override(
-                                    fontFamily:
-                                        GoogleFonts.spaceGrotesk().fontFamily,
-                                    color: theme.error,
-                                    fontWeight: FontWeight.bold,
+                                ValueListenableBuilder<String>(
+                                  valueListenable: GameState().timeNotifier,
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      value,
+                                      style: theme.labelLarge.override(
+                                        fontFamily: GoogleFonts.spaceGrotesk()
+                                            .fontFamily,
+                                        color: theme.error,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(width: 12.0),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    GameState().forceResetTimer();
+                                    context.goNamed(
+                                      CurrentTaskViewWidget.routeName,
+                                      extra: {
+                                        kTransitionInfoKey:
+                                            const TransitionInfo(
+                                          hasTransition: true,
+                                          transitionType:
+                                              PageTransitionType.leftToRight,
+                                          duration: Duration(milliseconds: 300),
+                                        ),
+                                      },
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0,
+                                      vertical: 10.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Skip Time',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ].divide(const SizedBox(width: 4.0)),
+                              ],
                             ),
-                          ].divide(const SizedBox(height: 4.0)),
+                          ],
                         ),
                         GestureDetector(
                           onTap: () =>
@@ -276,7 +337,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                         ].divide(const SizedBox(height: 16.0)),
                       ),
 
-                      // KAFELEK HARMONOGRAMU
+                      // KAFELEK HARMONOGRAMU (Rozbudowany o przełącznik)
                       Container(
                         decoration: BoxDecoration(
                           color: theme.secondaryBackground,
@@ -314,7 +375,9 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                         ),
                                       ),
                                       Text(
-                                        'Główny harmonogram dnia',
+                                        _showModifiedSchedule
+                                            ? 'Zaktualizowany plan działania'
+                                            : 'Główny harmonogram dnia',
                                         style: theme.bodySmall.override(
                                           fontFamily:
                                               GoogleFonts.urbanist().fontFamily,
@@ -323,67 +386,137 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                       ),
                                     ].divide(const SizedBox(height: 4.0)),
                                   ),
-                                  Icon(Icons.calendar_today_rounded,
-                                      color: theme.primary, size: 24.0),
+                                  Icon(
+                                    _showModifiedSchedule
+                                        ? Icons.edit_calendar_rounded
+                                        : Icons.calendar_today_rounded,
+                                    color: theme.primary,
+                                    size: 24.0,
+                                  ),
                                 ],
                               ),
+
+                              // NOWOŚĆ: Wizualny przełącznik (Segmented Tab Control)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 12.0, bottom: 4.0),
+                                child: Container(
+                                  height: 40.0,
+                                  decoration: BoxDecoration(
+                                    color: theme.primaryBackground,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () => setState(() =>
+                                              _showModifiedSchedule = false),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: !_showModifiedSchedule
+                                                  ? theme.secondaryBackground
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              'Główny',
+                                              style: theme.bodyMedium.copyWith(
+                                                fontWeight:
+                                                    !_showModifiedSchedule
+                                                        ? FontWeight.bold
+                                                        : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () => setState(() =>
+                                              _showModifiedSchedule = true),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: _showModifiedSchedule
+                                                  ? theme.secondaryBackground
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              'Zmieniony',
+                                              style: theme.bodyMedium.copyWith(
+                                                fontWeight:
+                                                    _showModifiedSchedule
+                                                        ? FontWeight.bold
+                                                        : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
                               Divider(
                                   height: 16.0,
                                   thickness: 1.0,
                                   color: theme.alternate),
 
-                              // Lista kafelków czasu
+                              // Lista kafelków czasu (Sterowana zmienną activeRoutine)
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   ScheduleItemWidget(
                                     leadingIcon: _getIconForActivity(
-                                        currentRoutine['RANO'],
+                                        activeRoutine['RANO'],
                                         Icons.wb_sunny_rounded),
                                     period: 'Rano',
-                                    activity:
-                                        currentRoutine['RANO'] ?? 'Brak danych',
+                                    activity: activeRoutine['RANO'] ?? '???',
                                     color: theme.secondary,
                                     time: '',
                                   ),
                                   ScheduleItemWidget(
                                     leadingIcon: _getIconForActivity(
-                                        currentRoutine['POŁUDNIE'],
+                                        activeRoutine['POŁUDNIE'],
                                         Icons.restaurant_rounded),
                                     period: 'Południe',
-                                    activity: currentRoutine['POŁUDNIE'] ??
-                                        'Brak danych',
+                                    activity:
+                                        activeRoutine['POŁUDNIE'] ?? '???',
                                     color: theme.tertiary,
                                     time: '',
                                   ),
                                   ScheduleItemWidget(
                                     leadingIcon: _getIconForActivity(
-                                        currentRoutine['POPOŁUDNIE'],
+                                        activeRoutine['POPOŁUDNIE'],
                                         Icons.park_rounded),
                                     period: 'Popołudnie',
-                                    activity: currentRoutine['POPOŁUDNIE'] ??
-                                        'Brak danych',
+                                    activity:
+                                        activeRoutine['POPOŁUDNIE'] ?? '???',
                                     color: theme.primary,
                                     time: '',
                                   ),
                                   ScheduleItemWidget(
                                     leadingIcon: _getIconForActivity(
-                                        currentRoutine['WIECZÓR'],
+                                        activeRoutine['WIECZÓR'],
                                         Icons.dark_mode_rounded),
                                     period: 'Wieczór',
-                                    activity: currentRoutine['WIECZÓR'] ??
-                                        'Brak danych',
+                                    activity: activeRoutine['WIECZÓR'] ?? '???',
                                     color: theme.secondaryText,
                                     time: '',
                                   ),
                                   ScheduleItemWidget(
                                     leadingIcon: _getIconForActivity(
-                                        currentRoutine['NOC'],
+                                        activeRoutine['NOC'],
                                         Icons.bedtime_rounded),
                                     period: 'Noc',
-                                    activity:
-                                        currentRoutine['NOC'] ?? 'Brak danych',
+                                    activity: activeRoutine['NOC'] ?? '???',
                                     color: theme.primaryText,
                                     time: '',
                                   ),
@@ -410,7 +543,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                           ),
                           Builder(
                             builder: (context) {
-                              final playersList = GameState().activePlayers;
+                              final playersList = _gameState.activePlayers;
                               final guesses = ProfileState().playerGuesses;
 
                               final duplicateSet = guesses.values
