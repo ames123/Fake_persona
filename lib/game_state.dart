@@ -42,8 +42,8 @@ class GameState {
   // ==========================================
   // SYSTEM GLOBALNEGO TIMERA
   // ==========================================
-  int remainingSeconds = 10; // Domyślnie 5 minut
-  int roundSeconds = 10;
+  int remainingSeconds = 60; // Domyślnie 5 minut
+  int roundSeconds = 60;
   Timer? _gameTimer;
   // Rejestr nasłuchiwania dla bezpiecznego odświeżania UI (safeSetState)
   void Function()? onTimeChanged;
