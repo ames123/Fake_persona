@@ -378,6 +378,17 @@ class _FinalGuessWidgetState extends State<FinalGuessWidget> {
                                     ProfileState().playerGuesses;
                                 print(
                                     'Wysyłanie ostatecznych typowań z bazy: $finalAnswers');
+                                context.goNamed(
+                                  GameResultsWidget.routeName,
+                                  extra: {
+                                    kTransitionInfoKey: const TransitionInfo(
+                                      hasTransition: true,
+                                      transitionType:
+                                          PageTransitionType.rightToLeft,
+                                      duration: Duration(milliseconds: 300),
+                                    ),
+                                  },
+                                );
                               },
                               child: const ButtonWidget(
                                 content: 'WYŚLIJ',

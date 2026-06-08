@@ -206,8 +206,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                           hasTransition: true,
                                           transitionType:
                                               PageTransitionType.leftToRight,
-                                          duration:
-                                              Duration(milliseconds: 300),
+                                          duration: Duration(milliseconds: 300),
                                         ),
                                       },
                                     );

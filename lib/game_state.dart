@@ -142,4 +142,14 @@ class GameState {
     stopTimer();
     remainingSeconds = roundSeconds;
   }
+
+  //wygrany
+  String? winnerName;
+  String? winnerInitials;
+
+  // Funkcja, którą wywołasz w momencie zakończenia gry
+  void setWinner(String name, String initials) {
+    winnerName = name;
+    winnerInitials = initials;
+  }
 }
