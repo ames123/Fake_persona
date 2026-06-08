@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -50,12 +52,43 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
 
     _resetAnimation =
         Tween<double>(begin: 0.0, end: 0.0).animate(_resetController);
+    initTimer();
+  }
+
+  bool submitted = false;
+
+  Timer? timer;
+
+  void initTimer() {
+    if (timer != null && timer!.isActive) return;
+
+    timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      setState(() {
+        if(GameState().state != 'POSITION'){
+              GameState().refreshGamestate();
+                                GameState().forceResetTimer();
+        // Przekierowanie na główny ekran śledztwa
+                                context.goNamed(
+                                  PlayerInvestigationWidget.routeName,
+                                  extra: {
+                                    kTransitionInfoKey: const TransitionInfo(
+                                      hasTransition: true,
+                                      transitionType:
+                                          PageTransitionType.rightToLeft,
+                                      duration: Duration(milliseconds: 300),
+                                    ),
+                                  },
+                                );
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
     _resetController.dispose();
     _model.dispose();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -354,21 +387,11 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
-                                // POPRAWKA: Wymuszone zresetowanie timera rundy do 05:00
-                                GameState().forceResetTimer();
 
-                                // Przekierowanie na główny ekran śledztwa
-                                context.goNamed(
-                                  PlayerInvestigationWidget.routeName,
-                                  extra: {
-                                    kTransitionInfoKey: const TransitionInfo(
-                                      hasTransition: true,
-                                      transitionType:
-                                          PageTransitionType.rightToLeft,
-                                      duration: Duration(milliseconds: 300),
-                                    ),
-                                  },
-                                );
+                                ProfileState().sendPositioningToApi(GameState().currentRoomCode, GameState().currentUsername);
+
+                                
+                                submitted = true;
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: theme.primary,

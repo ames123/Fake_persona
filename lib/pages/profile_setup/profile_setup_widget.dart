@@ -73,7 +73,6 @@ class _ProfileSetupWidgetState extends State<ProfileSetupWidget> {
     if (timer != null && timer!.isActive) return;
 
     timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      print("e");
       GameState().refreshGamestate();
       setState(() {
         if(GameState().state != 'ORDERING'){

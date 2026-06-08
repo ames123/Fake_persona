@@ -67,4 +67,34 @@ class ActionService {
       }
     }
   }
+
+  static Future<void> endHour(String roomCode, String username) async{
+    final uri = Uri.parse('$baseUrl/rooms/$roomCode/action/endHour?displayName=$username');
+    final resp = await http.post(uri);
+    Room room = Room(id: 9999, roomCode: "Err", gamestate: "Err", playercount: 9999, dayProgression: 9999, timeProgression: 9999, players: []);
+    if(resp.statusCode == 200){
+      try {
+        final data = jsonDecode(resp.body) as Map<String, dynamic>;
+        room = Room.fromJson(data);
+        GameState().setState(room.gamestate);
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
+  static Future<void> position(String roomCode, String username) async{
+    final uri = Uri.parse('$baseUrl/rooms/$roomCode/action/position?displayName=$username');
+    final resp = await http.post(uri);
+    Room room = Room(id: 9999, roomCode: "Err", gamestate: "Err", playercount: 9999, dayProgression: 9999, timeProgression: 9999, players: []);
+    if(resp.statusCode == 200){
+      try {
+        final data = jsonDecode(resp.body) as Map<String, dynamic>;
+        room = Room.fromJson(data);
+        GameState().setState(room.gamestate);
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
 }

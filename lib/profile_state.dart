@@ -160,6 +160,14 @@ class ProfileState {
       savedUserRoutine['WIECZÓR']!, savedUserRoutine['NOC']!);
   }
 
+  Future<void> sendEndHourToApi(String roomCode, String username) async{
+    await ActionService.endHour(roomCode, username);
+  }
+
+  Future<void> sendPositioningToApi(String roomCode, String username) async {
+    await ActionService.position(roomCode, username);
+  }
+
   List<SlotData> getDefaultSlotsForCurrentRole() {
     final routine = staticRoutines[currentRole];
     if (routine == null) return [];
