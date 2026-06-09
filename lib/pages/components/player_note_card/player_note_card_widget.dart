@@ -29,13 +29,13 @@ class PlayerNoteCardWidget extends StatelessWidget {
   final List<String> _locationsList = const [
     'Kuchnia z jadalnią',
     'Salon',
-    'Gabinet / Biblioteka',
+    'Gabinet',
     'Ogród',
     'Siłownia',
     'Łazienka',
     'Pokój Medyczny',
-    'Piwnica / Korytarz',
-    'Taras / Weranda',
+    'Piwnica',
+    'Taras',
     'Pokój Rozrywki',
     'Pracownia Naukowa',
     'Kącik Artysty',
@@ -55,7 +55,7 @@ class PlayerNoteCardWidget extends StatelessWidget {
       {'name': 'Próba roli', 'icon': Icons.theater_comedy_rounded},
       {'name': 'Oglądanie', 'icon': Icons.tv_rounded},
     ],
-    'Gabinet / Biblioteka': [
+    'Gabinet': [
       {'name': 'Pisanie książki', 'icon': Icons.menu_book_rounded},
       {'name': 'Eksperyment', 'icon': Icons.science_rounded},
       {'name': 'Czytanie', 'icon': Icons.auto_stories_rounded},
@@ -67,12 +67,11 @@ class PlayerNoteCardWidget extends StatelessWidget {
     ],
     'Siłownia': [
       {'name': 'Trening', 'icon': Icons.fitness_center_rounded},
-      {'name': 'Badanie lekarskie', 'icon': Icons.medical_services_rounded},
       {'name': 'Słuchanie muzyki', 'icon': Icons.headphones_rounded},
       {'name': 'Przebieranie się', 'icon': Icons.checkroom_rounded},
     ],
     'Łazienka': [
-      {'name': 'Kradzież', 'icon': Icons.gavel_rounded},
+      {'name': 'Dezynfekcja', 'icon': Icons.sanitizer_rounded},
       {'name': 'Mycie', 'icon': Icons.clean_hands_rounded},
       {'name': 'Ścieranie kurzu', 'icon': Icons.cleaning_services_rounded},
     ],
@@ -81,35 +80,35 @@ class PlayerNoteCardWidget extends StatelessWidget {
       {'name': 'Dezynfekcja', 'icon': Icons.vaccines_rounded},
       {'name': 'Odpocznek', 'icon': Icons.hotel_rounded},
     ],
-    'Piwnica / Korytarz': [
+    'Piwnica': [
       {'name': 'Kradzież', 'icon': Icons.gavel_rounded},
       {'name': 'Ścieranie kurzu', 'icon': Icons.cleaning_services_rounded},
       {'name': 'Szukanie zapasów', 'icon': Icons.search_rounded},
     ],
-    'Taras / Weranda': [
+    'Taras': [
       {'name': 'Pielęgnacja roślin', 'icon': Icons.yard_rounded},
-      {'name': 'Gotowanie', 'icon': Icons.soup_kitchen_rounded},
+      {'name': 'Czytanie', 'icon': Icons.soup_kitchen_rounded},
       {'name': 'Jedzenie', 'icon': Icons.restaurant_rounded},
     ],
     'Pokój Rozrywki': [
       {'name': 'Granie na PC', 'icon': Icons.sports_esports_rounded},
       {'name': 'Odpoczynek', 'icon': Icons.chair_rounded},
-      {'name': 'Słuchanie muzyki', 'icon': Icons.music_note_rounded},
+      {'name': 'Oglądanie', 'icon': Icons.tv_rounded},
     ],
     'Pracownia Naukowa': [
       {'name': 'Eksperyment', 'icon': Icons.biotech_rounded},
-      {'name': 'Badanie lekarskie', 'icon': Icons.health_and_safety_rounded},
-      {'name': 'Czytanie', 'icon': Icons.menu_book_rounded},
+      {'name': 'Gotowanie', 'icon': Icons.soup_kitchen_rounded},
+      {'name': 'Badanie lekarskie', 'icon': Icons.medical_services_rounded},
     ],
     'Kącik Artysty': [
       {'name': 'Pisanie książki', 'icon': Icons.edit_note_rounded},
       {'name': 'Próba roli', 'icon': Icons.theater_comedy_rounded},
-      {'name': 'Oglądanie', 'icon': Icons.movie_rounded},
+      {'name': 'Słuchanie muzyki', 'icon': Icons.music_note_rounded},
     ],
     'Basen': [
       {'name': 'Sport', 'icon': Icons.pool_rounded},
       {'name': 'Mycie', 'icon': Icons.waves_rounded},
-      {'name': 'Dezynfekcja', 'icon': Icons.sanitizer_rounded},
+      {'name': 'Kradzież', 'icon': Icons.gavel_rounded},
       {'name': 'Przebieranie się', 'icon': Icons.checkroom_rounded},
     ],
   };
