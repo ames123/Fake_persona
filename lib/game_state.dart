@@ -1,3 +1,4 @@
+import 'package:schedule_sleuth/profile_state.dart';
 import 'package:schedule_sleuth/room.dart';
 import 'package:schedule_sleuth/services/room_service.dart';
 
@@ -84,9 +85,11 @@ class GameState {
       } else {
         stopTimer();
         _notifyTimeChanged();
+        ProfileState().sendEndHourToApi(GameState().currentRoomCode,GameState().currentUsername);
         if (_currentContext != null && _currentContext!.mounted) {
           //timer expiry
-          _currentContext!.goNamed('CurrentTaskView');
+          
+          //_currentContext!.goNamed('CurrentTaskView');
         }
       }
     });
@@ -182,6 +185,7 @@ class GameState {
 
   Future<void> refreshTimeDataFromApi() async {
     Room room = await RoomService.fetchRoom(currentRoomCode);
+    state = room.gamestate;
     currentDay = room.dayProgression;
     currentTimePeriod = room.timeProgression;
   }

@@ -72,6 +72,8 @@ class _CurrentTaskViewWidgetState extends State<CurrentTaskViewWidget>
     if (timer != null && timer!.isActive) return;
 
     timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      GameState().refreshTimeDataFromApi();
+      currentActivePeriod =  timeLabels[GameState().currentTimePeriod];
       setState(() {
         if(GameState().state != 'POSITION'){
               GameState().refreshGamestate();

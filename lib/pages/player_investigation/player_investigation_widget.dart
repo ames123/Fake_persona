@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -81,11 +83,38 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
     const Color(0xFF1E88E5),
   ];
 
+  Timer? timer;
+
+  void initTimer() {
+    if (timer != null && timer!.isActive) return;
+
+    timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      GameState().refreshGamestate();
+      setState(() {
+        if(GameState().state != 'DEDUCTION'){
+          GameState().forceResetTimer();
+                                    context.goNamed(
+                                      CurrentTaskViewWidget.routeName,
+                                      extra: {
+                                        kTransitionInfoKey:
+                                            const TransitionInfo(
+                                          hasTransition: true,
+                                          transitionType:
+                                              PageTransitionType.leftToRight,
+                                          duration: Duration(milliseconds: 300),
+                                        ),
+                                      },
+                                    );
+        }
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PlayerInvestigationModel());
-
+    initTimer();
     _gameState.updateContext(context);
     _gameState.startTimer(context);
   }
@@ -107,6 +136,7 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
   void dispose() {
     _gameState.onTimeChanged = null;
     _model.dispose();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -206,20 +236,9 @@ class _PlayerInvestigationWidgetState extends State<PlayerInvestigationWidget> {
                                 const SizedBox(width: 12.0),
                                 ElevatedButton(
                                   onPressed: () {
+                                    //koniec
                                     _profileState.sendEndHourToApi(GameState().currentRoomCode,GameState().currentUsername);
-                                    GameState().forceResetTimer();
-                                    context.goNamed(
-                                      CurrentTaskViewWidget.routeName,
-                                      extra: {
-                                        kTransitionInfoKey:
-                                            const TransitionInfo(
-                                          hasTransition: true,
-                                          transitionType:
-                                              PageTransitionType.leftToRight,
-                                          duration: Duration(milliseconds: 300),
-                                        ),
-                                      },
-                                    );
+                                    
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
