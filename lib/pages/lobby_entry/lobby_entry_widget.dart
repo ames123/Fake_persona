@@ -76,10 +76,11 @@ class _LobbyEntryWidgetState extends State<LobbyEntryWidget> {
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Icon(
-                            Icons.help,
-                            color: FlutterFlowTheme.of(context).onPrimary,
-                            size: 48.0,
+                          child: Image.asset(
+                            'assets/images/Logo.png', // Zweryfikuj czy ścieżka i rozszerzenie w FF się zgadzają
+                            width: 48.0,
+                            height: 48.0,
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
