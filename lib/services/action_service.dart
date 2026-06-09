@@ -5,7 +5,7 @@ import 'package:schedule_sleuth/room.dart';
 import 'package:schedule_sleuth/player.dart';
 
 class ActionService {
-  static String baseUrl = 'http://localhost:2137';
+  static String baseUrl = 'https://adams-parts-subscribe-italia.trycloudflare.com';
 
   static Future<void> startGame(String roomCode) async{
     final uri = Uri.parse('$baseUrl/rooms/$roomCode/action/start');

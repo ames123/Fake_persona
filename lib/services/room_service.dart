@@ -4,7 +4,7 @@ import 'package:schedule_sleuth/room.dart';
 import 'package:schedule_sleuth/player.dart';
 
 class RoomService {
-  static String baseUrl = 'http://localhost:2137';
+  static String baseUrl = 'https://adams-parts-subscribe-italia.trycloudflare.com';
 
   
   static Future<Room> fetchRoom(String roomCode) async {
